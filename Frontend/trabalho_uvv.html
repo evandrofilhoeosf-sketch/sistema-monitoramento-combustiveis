@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sistema de Monitoramento de Preços de Combustíveis</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        header {
+            background: #1f2937;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #d1d5db;
+        }
+
+        main {
+            width: 95%;
+            max-width: 1400px;
+            margin: 30px auto;
+        }
+
+        .dashboard-titulo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-titulo h2 {
+            font-size: 28px;
+        }
+
+        #btnAtualizar {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 11px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #btnAtualizar:hover {
+            opacity: 0.9;
+        }
+
+        #btnAtualizar:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* CARDS */
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .card h3 {
+            font-size: 15px;
+            color: #6b7280;
+            margin-bottom: 12px;
+        }
+
+        .card .valor {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        /* FILTROS */
+
+        .filtros {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .filtros h2 {
+            margin-bottom: 15px;
+        }
+
+        .filtros-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .filtro {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .filtro label {
+            font-weight: bold;
+        }
+
+        .filtro select {
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            background: white;
+        }
+
+        /* SEÇÕES */
+
+        .secao {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .secao h2 {
+            margin-bottom: 20px;
+        }
+
+        /* TABELAS */
+
+        .tabela-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #1f2937;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        td {
+            padding: 11px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        /* GRÁFICOS */
+
+        .graficos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .grafico-container {
+            position: relative;
+            height: 400px;
+        }
+
+        /* RESPONSIVO */
+
+        @media (max-width: 900px) {
+
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .graficos {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .filtros-container {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-titulo {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .dashboard-titulo h2 {
+                font-size: 24px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <header>
+
+        <h1>
+            Sistema de Monitoramento de Preços de Combustíveis
+        </h1>
+
+        <p>
+            Consulta e análise dos preços coletados
+        </p>
+
+    </header>
+
+
+    <main>
+
+
+        <!-- DASHBOARD -->
+
+        <div class="dashboard-titulo">
+
+            <h2>
+                Dashboard
+            </h2>
+
+            <button id="btnAtualizar" type="button">
+                🔄 Atualizar dados
+            </button>
+
+        </div>
+
+
+        <!-- CARDS -->
+
+        <section class="cards">
+
+            <div class="card">
+
+                <h3>
+                    Total de Postos
+                </h3>
+
+                <div
+                    class="valor"
+                    id="totalPostos">
+                    -
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>
+                    Combustíveis
+                </h3>
+
+                <div
+                    class="valor"
+                    id="totalCombustiveis">
+                    -
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>
+                    Total de Coletas
+                </h3>
+
+                <div
+                    class="valor"
+                    id="totalColetas">
+                    -
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>
+                    Última Coleta
+                </h3>
+
+                <div
+                    class="valor"
+                    id="ultimaColeta">
+                    -
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- FILTROS -->
+
+        <section class="filtros">
+
+            <h2>
+                Filtros
+            </h2>
+
+            <div class="filtros-container">
+
+                <div class="filtro">
+
+                    <label for="filtroPosto">
+                        Posto
+                    </label>
+
+                    <select id="filtroPosto">
+
+                        <option value="">
+                            Todos
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="filtro">
+
+                    <label for="filtroCombustivel">
+                        Combustível
+                    </label>
+
+                    <select id="filtroCombustivel">
+
+                        <option value="">
+                            Todos
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- CONSULTA 1 -->
+
+        <section class="secao">
+
+            <h2>
+                Menor e Maior Preço por Combustível
+            </h2>
+
+            <div class="tabela-container">
+
+                <table>
+
+                    <thead>
+    <tr>
+        <th>Combustível</th>
+        <th>Menor preço</th>
+        <th>Posto (menor)</th>
+        <th>Bairro (menor)</th>
+        <th>Data da coleta (menor)</th>
+        <th>Maior preço</th>
+        <th>Posto (maior)</th>
+        <th>Bairro (maior)</th>
+        <th>Data da coleta (maior)</th>
+    </tr>
+</thead>
+
+                    <tbody id="tabelaConsulta1"></tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- CONSULTA 2 -->
+
+        <section class="secao">
+
+            <h2>
+                Preço Médio por Posto e Combustível
+            </h2>
+
+            <div class="tabela-container">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Posto</th>
+                            <th>Bairro</th>
+                            <th>Combustível</th>
+                            <th>Preço médio</th>
+                            <th>Quantidade de amostras</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tabelaConsulta2"></tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- CONSULTA 3 -->
+
+        <section class="secao">
+
+            <h2>
+                Último Preço Registrado
+            </h2>
+
+            <div class="tabela-container">
+
+                <table>
+
+                    <thead>
+    <tr>
+        <th>Posto</th>
+        <th>Bairro</th>
+        <th>Combustível</th>
+        <th>Valor</th>
+        <th>Data da coleta</th>
+    </tr>
+</thead>
+
+                    <tbody id="tabelaConsulta3"></tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- CONSULTA 4 -->
+
+        <section class="secao">
+
+            <h2>
+    Evolução do Preço
+</h2>
+
+            <div class="tabela-container">
+
+                <table>
+
+                    <thead>
+    <tr>
+        <th>Posto</th>
+        <th>Bairro</th>
+        <th>Combustível</th>
+        <th>Valor</th>
+        <th>Data da coleta</th>
+    </tr>
+</thead>
+
+                    <tbody id="tabelaConsulta4"></tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- GRÁFICOS -->
+
+        <section class="secao">
+
+            <h2>
+                Gráficos
+            </h2>
+
+            <div class="graficos">
+
+
+                <div class="grafico-container">
+
+                    <canvas id="graficoMedio"></canvas>
+
+                </div>
+
+
+                <div class="grafico-container">
+
+                    <canvas id="graficoPostos"></canvas>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+
+    <script>
+
+        // =====================================================
+        // CONFIGURAÇÃO DA API
+        // =====================================================
+
+        const API_BASE_URL =
+            "http://localhost:5081/api";
+
+
+        let dados = [];
+
+        let graficoMedio = null;
+
+        let graficoPostos = null;
+
+        let atualizando = false;
+
+
+
+        // =====================================================
+        // FORMATAR DATA
+        // =====================================================
+
+        function formatarData(data) {
+
+            if (!data) {
+                return "-";
+            }
+
+            const dataLimpa =
+                data.substring(0, 10);
+
+            const partes =
+                dataLimpa.split("-");
+
+            if (partes.length !== 3) {
+                return data;
+            }
+
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+
+        }
+
+
+
+        // =====================================================
+        // FORMATAR VALOR
+        // =====================================================
+
+        function formatarValor(valor) {
+
+            return Number(valor).toLocaleString(
+                "pt-BR",
+                {
+                    style: "currency",
+                    currency: "BRL"
+                }
+            );
+
+        }
+
+
+
+        // =====================================================
+        // CARREGAR DADOS DA API
+        // =====================================================
+
+        async function carregarDadosDaAPI() {
+
+            if (atualizando) {
+                return;
+            }
+
+            atualizando = true;
+
+            try {
+
+                console.log(
+                    "Consultando API..."
+                );
+
+
+                const resposta =
+                    await fetch(
+                        `${API_BASE_URL}/verificacoes`
+                    );
+
+
+                if (!resposta.ok) {
+
+                    throw new Error(
+                        `API retornou erro ${resposta.status}`
+                    );
+
+                }
+
+
+                const dadosAPI =
+                    await resposta.json();
+
+
+                console.log(
+                    "Dados recebidos:",
+                    dadosAPI.length
+                );
+
+
+                dados =
+                    dadosAPI.map(item => ({
+
+                        id:
+                            item.idVerificacao,
+
+                        posto:
+                            item.nomePosto,
+
+                        bairro:
+                            item.bairro,
+
+                        combustivel:
+                            item.nomeCombustivel,
+
+                        valor:
+                            Number(item.precoVerificado),
+
+                        data:
+                            item.dataVerificacao
+                                .substring(0, 10)
+
+                    }));
+
+
+                atualizarPagina();
+
+            }
+            catch (erro) {
+
+                console.error(
+                    "Erro ao carregar dados da API:",
+                    erro
+                );
+
+            }
+            finally {
+
+                atualizando = false;
+
+            }
+
+        }
+
+
+
+        // =====================================================
+        // ATUALIZAR TODA A PÁGINA
+        // =====================================================
+
+        function atualizarPagina() {
+
+            carregarDashboard();
+
+            carregarFiltros();
+
+            executarConsulta1();
+
+            executarConsulta2();
+
+            executarConsulta3();
+
+            executarConsulta4();
+
+            criarGraficos();
+
+        }
+
+
+
+        // =====================================================
+        // DASHBOARD
+        // =====================================================
+
+        function carregarDashboard() {
+
+            const elementoPostos =
+                document.getElementById(
+                    "totalPostos"
+                );
+
+            const elementoCombustiveis =
+                document.getElementById(
+                    "totalCombustiveis"
+                );
+
+            const elementoColetas =
+                document.getElementById(
+                    "totalColetas"
+                );
+
+            const elementoUltimaColeta =
+                document.getElementById(
+                    "ultimaColeta"
+                );
+
+
+            const postos =
+                [
+                    ...new Set(
+                        dados.map(
+                            item => item.posto
+                        )
+                    )
+                ];
+
+
+            const combustiveis =
+                [
+                    ...new Set(
+                        dados.map(
+                            item => item.combustivel
+                        )
+                    )
+                ];
+
+
+            elementoPostos.textContent =
+                postos.length;
+
+
+            elementoCombustiveis.textContent =
+                combustiveis.length;
+
+
+            elementoColetas.textContent =
+                dados.length;
+
+
+            if (dados.length > 0) {
+
+                const datas =
+                    dados
+                        .map(item => item.data)
+                        .sort()
+                        .reverse();
+
+
+                elementoUltimaColeta.textContent =
+                    formatarData(datas[0]);
+
+            }
+            else {
+
+                elementoUltimaColeta.textContent =
+                    "-";
+
+            }
+
+        }
+
+
+
+        // =====================================================
+        // FILTROS
+        // =====================================================
+
+        function carregarFiltros() {
+
+            const filtroPosto =
+                document.getElementById(
+                    "filtroPosto"
+                );
+
+            const filtroCombustivel =
+                document.getElementById(
+                    "filtroCombustivel"
+                );
+
+
+            const postoSelecionado =
+                filtroPosto.value;
+
+
+            const combustivelSelecionado =
+                filtroCombustivel.value;
+
+
+            filtroPosto.innerHTML =
+                '<option value="">Todos</option>';
+
+
+            filtroCombustivel.innerHTML =
+                '<option value="">Todos</option>';
+
+
+            const postos =
+                [
+                    ...new Set(
+                        dados.map(
+                            item => item.posto
+                        )
+                    )
+                ].sort();
+
+
+            postos.forEach(posto => {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+                option.value =
+                    posto;
+
+                option.textContent =
+                    posto;
+
+                filtroPosto.appendChild(
+                    option
+                );
+
+            });
+
+
+            const combustiveis =
+                [
+                    ...new Set(
+                        dados.map(
+                            item => item.combustivel
+                        )
+                    )
+                ].sort();
+
+
+            combustiveis.forEach(combustivel => {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+                option.value =
+                    combustivel;
+
+                option.textContent =
+                    combustivel;
+
+                filtroCombustivel.appendChild(
+                    option
+                );
+
+            });
+
+
+            if (
+                [...filtroPosto.options]
+                    .some(
+                        option =>
+                            option.value ===
+                            postoSelecionado
+                    )
+            ) {
+
+                filtroPosto.value =
+                    postoSelecionado;
+
+            }
+
+
+            if (
+                [...filtroCombustivel.options]
+                    .some(
+                        option =>
+                            option.value ===
+                            combustivelSelecionado
+                    )
+            ) {
+
+                filtroCombustivel.value =
+                    combustivelSelecionado;
+
+            }
+
+
+            filtroPosto.onchange =
+                executarConsulta4;
+
+
+            filtroCombustivel.onchange =
+                executarConsulta4;
+
+        }
+
+
+
+        // =====================================================
+        // CONSULTA 1
+        // =====================================================
+function executarConsulta1() {
+
+    const tabela =
+        document.getElementById(
+            "tabelaConsulta1"
+        );
+
+    tabela.innerHTML = "";
+
+    const grupos = {};
+
+    dados.forEach(item => {
+
+        if (!grupos[item.combustivel]) {
+
+            grupos[item.combustivel] = [];
+        }
+
+        grupos[item.combustivel].push(item);
+    });
+
+
+    Object.keys(grupos)
+        .sort()
+        .forEach(combustivel => {
+
+            const registros =
+                grupos[combustivel];
+
+
+            // Encontra o registro com menor preço
+            const menor =
+                registros.reduce(
+                    (menorAtual, item) => {
+
+                        if (
+                            item.valor <
+                            menorAtual.valor
+                        ) {
+                            return item;
+                        }
+
+                        return menorAtual;
+                    }
+                );
+
+
+            // Encontra o registro com maior preço
+            const maior =
+                registros.reduce(
+                    (maiorAtual, item) => {
+
+                        if (
+                            item.valor >
+                            maiorAtual.valor
+                        ) {
+                            return item;
+                        }
+
+                        return maiorAtual;
+                    }
+                );
+
+
+            const linha =
+                tabela.insertRow();
+
+
+            linha.innerHTML = `
+    <td>
+        ${combustivel}
+    </td>
+
+    <td>
+        ${formatarValor(menor.valor)}
+    </td>
+
+    <td>
+        ${menor.posto}
+    </td>
+
+    <td>
+        ${menor.bairro}
+    </td>
+
+    <td>
+        ${formatarData(menor.data)}
+    </td>
+
+    <td>
+        ${formatarValor(maior.valor)}
+    </td>
+
+    <td>
+        ${maior.posto}
+    </td>
+
+    <td>
+        ${maior.bairro}
+    </td>
+
+    <td>
+        ${formatarData(maior.data)}
+    </td>
+`;
+        });
+}
+
+
+
+        // =====================================================
+        // CONSULTA 2
+        // =====================================================
+
+        function executarConsulta2() {
+
+            const tabela =
+                document.getElementById(
+                    "tabelaConsulta2"
+                );
+
+
+            tabela.innerHTML = "";
+
+
+            const grupos = {};
+
+
+            dados.forEach(item => {
+
+                const chave =
+                    `${item.posto}|${item.combustivel}`;
+
+
+                            if (!grupos[chave]) {
+                grupos[chave] = {
+                    posto: item.posto,
+                    bairro: item.bairro,
+                    combustivel: item.combustivel,
+                    valores: []
+                };
+            }
+
+
+                grupos[chave]
+                    .valores
+                    .push(item.valor);
+
+            });
+
+
+            Object.values(grupos)
+                .sort(
+                    (a, b) =>
+                        a.posto.localeCompare(
+                            b.posto
+                        )
+                )
+                .forEach(grupo => {
+
+
+                    const soma =
+                        grupo.valores.reduce(
+                            (total, valor) =>
+                                total + valor,
+                            0
+                        );
+
+
+                    const media =
+                        soma /
+                        grupo.valores.length;
+
+
+                    const linha =
+                        tabela.insertRow();
+
+
+                    linha.innerHTML = `
+                      <td>${grupo.posto}</td>
+                      <td>${grupo.bairro}</td>
+                      <td>${grupo.combustivel}</td>
+                      <td>${formatarValor(media)}</td>
+                      <td>${grupo.valores.length}</td>
+                    `;
+
+                });
+
+        }
+
+
+
+        // =====================================================
+        // CONSULTA 3
+        // =====================================================
+
+        function executarConsulta3() {
+
+            const tabela =
+                document.getElementById(
+                    "tabelaConsulta3"
+                );
+
+
+            tabela.innerHTML = "";
+
+
+            const grupos = {};
+
+
+            dados.forEach(item => {
+
+                const chave =
+                    `${item.posto}|${item.combustivel}`;
+
+
+                if (
+                    !grupos[chave] ||
+                    item.data >
+                    grupos[chave].data
+                ) {
+
+                    grupos[chave] =
+                        item;
+
+                }
+
+            });
+
+
+            Object.values(grupos)
+                .sort(
+                    (a, b) =>
+                        a.posto.localeCompare(
+                            b.posto
+                        )
+                )
+                .forEach(item => {
+
+
+                    const linha =
+                        tabela.insertRow();
+
+
+                    linha.innerHTML = `
+    <td>${item.posto}</td>
+    <td>${item.bairro}</td>
+    <td>${item.combustivel}</td>
+    <td>${formatarValor(item.valor)}</td>
+    <td>${formatarData(item.data)}</td>
+`;
+
+                });
+
+        }
+
+
+
+        // =====================================================
+// CONSULTA 4
+// =====================================================
+function executarConsulta4() {
+
+    const tabela =
+        document.getElementById(
+            "tabelaConsulta4"
+        );
+
+    const filtroPosto =
+        document.getElementById(
+            "filtroPosto"
+        ).value;
+
+    const filtroCombustivel =
+        document.getElementById(
+            "filtroCombustivel"
+        ).value;
+
+    tabela.innerHTML = "";
+
+
+    // É necessário selecionar os dois filtros
+    if (!filtroPosto || !filtroCombustivel) {
+
+        const linha = tabela.insertRow();
+
+        const celula = linha.insertCell();
+
+        celula.colSpan = 5;
+
+        celula.textContent =
+            "Selecione um posto e um combustível para visualizar a evolução dos preços.";
+
+        celula.style.textAlign = "center";
+
+        return;
+    }
+
+
+    // Filtra exatamente pelo posto E pelo combustível
+    const dadosFiltrados =
+        dados
+            .filter(item =>
+                item.posto === filtroPosto &&
+                item.combustivel === filtroCombustivel
+            )
+            .sort((a, b) =>
+                a.data.localeCompare(b.data)
+            );
+
+
+    // Caso não existam registros
+    if (dadosFiltrados.length === 0) {
+
+        const linha = tabela.insertRow();
+
+        const celula = linha.insertCell();
+
+        celula.colSpan = 5;
+
+        celula.textContent =
+            "Não existem registros para este posto e combustível.";
+
+        celula.style.textAlign = "center";
+
+        return;
+    }
+
+
+    // Mostra a evolução cronológica dos preços
+    dadosFiltrados.forEach(item => {
+
+        const linha =
+            tabela.insertRow();
+
+        linha.innerHTML = `
+            <td>
+                ${item.posto}
+            </td>
+
+            <td>
+                ${item.bairro}
+            </td>
+
+            <td>
+                ${item.combustivel}
+            </td>
+
+            <td>
+                ${formatarValor(item.valor)}
+            </td>
+
+            <td>
+                ${formatarData(item.data)}
+            </td>
+        `;
+    });
+}
+
+
+
+        // =====================================================
+        // GRÁFICOS
+        // =====================================================
+
+        function criarGraficos() {
+
+            criarGraficoMedio();
+
+            criarGraficoPostos();
+
+        }
+
+
+
+        function criarGraficoMedio() {
+
+            const canvas =
+                document.getElementById(
+                    "graficoMedio"
+                );
+
+
+            if (graficoMedio) {
+
+                graficoMedio.destroy();
+
+            }
+
+
+            const grupos = {};
+
+
+            dados.forEach(item => {
+
+                if (
+                    !grupos[item.combustivel]
+                ) {
+
+                    grupos[item.combustivel] =
+                        [];
+
+                }
+
+
+                grupos[item.combustivel]
+                    .push(item.valor);
+
+            });
+
+
+            const labels =
+                Object.keys(grupos).sort();
+
+
+            const valores =
+                labels.map(combustivel => {
+
+                    const lista =
+                        grupos[combustivel];
+
+
+                    const soma =
+                        lista.reduce(
+                            (total, valor) =>
+                                total + valor,
+                            0
+                        );
+
+
+                    return soma /
+                        lista.length;
+
+                });
+
+
+            graficoMedio =
+                new Chart(
+                    canvas,
+                    {
+
+                        type: "bar",
+
+                        data: {
+
+                            labels: labels,
+
+                            datasets: [{
+
+                                label:
+                                    "Preço médio",
+
+                                data:
+                                    valores
+
+                            }]
+
+                        },
+
+                        options: {
+
+                            responsive: true,
+
+                            maintainAspectRatio:
+                                false,
+
+                            scales: {
+
+                                y: {
+
+                                    beginAtZero:
+                                        false
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+                );
+
+        }
+
+
+
+        function criarGraficoPostos() {
+
+            const canvas =
+                document.getElementById(
+                    "graficoPostos"
+                );
+
+
+            if (graficoPostos) {
+
+                graficoPostos.destroy();
+
+            }
+
+
+            const grupos = {};
+
+
+            dados.forEach(item => {
+
+                if (!grupos[item.posto]) {
+
+                    grupos[item.posto] =
+                        [];
+
+                }
+
+
+                grupos[item.posto]
+                    .push(item.valor);
+
+            });
+
+
+            const labels =
+                Object.keys(grupos).sort();
+
+
+            const valores =
+                labels.map(posto => {
+
+                    const lista =
+                        grupos[posto];
+
+
+                    const soma =
+                        lista.reduce(
+                            (total, valor) =>
+                                total + valor,
+                            0
+                        );
+
+
+                    return soma /
+                        lista.length;
+
+                });
+
+
+            graficoPostos =
+                new Chart(
+                    canvas,
+                    {
+
+                        type: "bar",
+
+                        data: {
+
+                            labels: labels,
+
+                            datasets: [{
+
+                                label:
+                                    "Preço médio por posto",
+
+                                data:
+                                    valores
+
+                            }]
+
+                        },
+
+                        options: {
+
+                            responsive: true,
+
+                            maintainAspectRatio:
+                                false,
+
+                            scales: {
+
+                                y: {
+
+                                    beginAtZero:
+                                        false
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+                );
+
+        }
+
+
+
+        // =====================================================
+        // BOTÃO ATUALIZAR
+        // =====================================================
+
+        document
+            .getElementById("btnAtualizar")
+            .addEventListener(
+                "click",
+                async function () {
+
+                    const botao = this;
+
+
+                    botao.disabled = true;
+
+                    botao.textContent =
+                        "🔄 Atualizando...";
+
+
+                    await carregarDadosDaAPI();
+
+
+                    botao.disabled = false;
+
+                    botao.textContent =
+                        "🔄 Atualizar dados";
+
+                }
+            );
+
+
+
+        // =====================================================
+        // INICIALIZAÇÃO
+        // =====================================================
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                carregarDadosDaAPI();
+
+
+                // Atualiza automaticamente
+                // a cada 30 segundos
+
+                setInterval(
+                    carregarDadosDaAPI,
+                    30000
+                );
+
+            }
+        );
+
+    </script>
+
+
+</body>
+
+</html>
