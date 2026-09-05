@@ -104,56 +104,6 @@
             font-weight: bold;
         }
 
-        /* FILTROS */
-
-        .filtros {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        .filtros h2 {
-            margin-bottom: 15px;
-        }
-
-        .filtros-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .filtro {
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-        }
-
-        .filtro label {
-            font-weight: bold;
-        }
-
-        .filtro select {
-            padding: 10px;
-            border: 1px solid #d1d5db;
-            border-radius: 7px;
-            background: white;
-        }
-
-        /* SEÇÕES */
-
-        .secao {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        .secao h2 {
-            margin-bottom: 20px;
-        }
 
         /* TABELAS */
 
@@ -261,10 +211,6 @@
             <h2>
                 Dashboard
             </h2>
-
-            <button id="btnAtualizar" type="button">
-                🔄 Atualizar dados
-            </button>
 
         </div>
 
@@ -519,37 +465,73 @@
 
         <!-- GRÁFICOS -->
 
-        <section class="secao">
+        <!-- CONSULTA 4 -->
+<section class="secao">
 
-            <h2>
-                Gráficos
-            </h2>
+    <h2>
+        Evolução do Preço
+    </h2>
 
-            <div class="graficos">
+    <p style="margin-bottom: 20px; color: #6b7280;">
+        Selecione um posto e um combustível para visualizar
+        a evolução dos preços ao longo das coletas.
+    </p>
 
+    <div class="filtros-container" style="margin-bottom: 20px;">
 
-                <div class="grafico-container">
+        <div class="filtro">
 
-                    <canvas id="graficoMedio"></canvas>
+            <label for="filtroPosto">
+                Posto
+            </label>
 
-                </div>
+            <select id="filtroPosto">
+                <option value="">
+                    Selecione um posto
+                </option>
+            </select>
 
+        </div>
 
-                <div class="grafico-container">
+        <div class="filtro">
 
-                    <canvas id="graficoPostos"></canvas>
+            <label for="filtroCombustivel">
+                Combustível
+            </label>
 
-                </div>
+            <select id="filtroCombustivel">
+                <option value="">
+                    Selecione um combustível
+                </option>
+            </select>
 
+        </div>
 
-            </div>
+    </div>
 
-        </section>
+    <div class="tabela-container">
 
+        <table>
 
-    </main>
+            <thead>
 
+                <tr>
+                    <th>Posto</th>
+                    <th>Bairro</th>
+                    <th>Combustível</th>
+                    <th>Valor</th>
+                    <th>Data da coleta</th>
+                </tr>
 
+            </thead>
+
+            <tbody id="tabelaConsulta4"></tbody>
+
+        </table>
+
+    </div>
+
+</section>
 
     <script>
 
@@ -815,11 +797,10 @@
 
 
             filtroPosto.innerHTML =
-                '<option value="">Todos</option>';
+    '<option value="">Selecione um posto</option>';
 
-
-            filtroCombustivel.innerHTML =
-                '<option value="">Todos</option>';
+filtroCombustivel.innerHTML =
+    '<option value="">Selecione um combustível</option>';
 
 
             const postos =
@@ -1518,63 +1499,16 @@ function executarConsulta4() {
                 );
 
         }
-
-
-
-        // =====================================================
-        // BOTÃO ATUALIZAR
-        // =====================================================
-
-        document
-            .getElementById("btnAtualizar")
-            .addEventListener(
-                "click",
-                async function () {
-
-                    const botao = this;
-
-
-                    botao.disabled = true;
-
-                    botao.textContent =
-                        "🔄 Atualizando...";
-
-
-                    await carregarDados();
-
-
-                    botao.disabled = false;
-
-                    botao.textContent =
-                        "🔄 Atualizar dados";
-
-                }
-            );
-
-
-
         // =====================================================
         // INICIALIZAÇÃO
         // =====================================================
 
         document.addEventListener(
-            "DOMContentLoaded",
-            function () {
-
-                carregarDados();
-
-
-                // Atualiza automaticamente
-                // a cada 30 segundos
-
-                setInterval(
-                    carregarDados,
-                    30000
-                );
-
-            }
-        );
-
+    "DOMContentLoaded",
+    function () {
+        carregarDados();
+    }
+);
     </script>
 
 
