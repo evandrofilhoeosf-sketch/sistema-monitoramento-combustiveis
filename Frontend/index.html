@@ -557,10 +557,6 @@
         // CONFIGURAÇÃO DA API
         // =====================================================
 
-        const API_BASE_URL =
-            "http://localhost:5081/api";
-
-
         let dados = [];
 
         let graficoMedio = null;
@@ -616,92 +612,73 @@
 
 
         // =====================================================
-        // CARREGAR DADOS DA API
+        // CARREGAR DADOS DO JSON
         // =====================================================
 
-        async function carregarDadosDaAPI() {
+        async function carregarDados() {
 
-            if (atualizando) {
-                return;
-            }
+    if (atualizando) {
+        return;
+    }
 
-            atualizando = true;
+    atualizando = true;
 
-            try {
+    try {
 
-                console.log(
-                    "Consultando API..."
-                );
+        console.log("Carregando dados do arquivo JSON...");
 
+        const resposta = await fetch("dados.json");
 
-                const resposta =
-                    await fetch(
-                        `${API_BASE_URL}/verificacoes`
-                    );
-
-
-                if (!resposta.ok) {
-
-                    throw new Error(
-                        `API retornou erro ${resposta.status}`
-                    );
-
-                }
-
-
-                const dadosAPI =
-                    await resposta.json();
-
-
-                console.log(
-                    "Dados recebidos:",
-                    dadosAPI.length
-                );
-
-
-                dados =
-                    dadosAPI.map(item => ({
-
-                        id:
-                            item.idVerificacao,
-
-                        posto:
-                            item.nomePosto,
-
-                        bairro:
-                            item.bairro,
-
-                        combustivel:
-                            item.nomeCombustivel,
-
-                        valor:
-                            Number(item.precoVerificado),
-
-                        data:
-                            item.dataVerificacao
-                                .substring(0, 10)
-
-                    }));
-
-
-                atualizarPagina();
-
-            }
-            catch (erro) {
-
-                console.error(
-                    "Erro ao carregar dados da API:",
-                    erro
-                );
-
-            }
-            finally {
-
-                atualizando = false;
-
-            }
-
+        if (!resposta.ok) {
+            throw new Error(
+                `Não foi possível carregar o arquivo dados.json.`
+            );
         }
+
+        const dadosJSON = await resposta.json();
+
+        console.log(
+            "Dados recebidos:",
+            dadosJSON.length
+        );
+
+        dados = dadosJSON.map(item => ({
+            id:
+                item.id_verificacao,
+
+            posto:
+                item.nome_posto,
+
+            bairro:
+                item.bairro,
+
+            combustivel:
+                item.nome_combustivel,
+
+            valor:
+                Number(item.preco_verificado),
+
+            data:
+                item.data_verificacao.substring(0, 10)
+        }));
+
+        atualizarPagina();
+
+    }
+    catch (erro) {
+
+        console.error(
+            "Erro ao carregar dados do JSON:",
+            erro
+        );
+
+    }
+    finally {
+
+        atualizando = false;
+
+    }
+}
 
 
 
@@ -1563,7 +1540,7 @@ function executarConsulta4() {
                         "🔄 Atualizando...";
 
 
-                    await carregarDadosDaAPI();
+                    await carregarDados();
 
 
                     botao.disabled = false;
@@ -1584,14 +1561,14 @@ function executarConsulta4() {
             "DOMContentLoaded",
             function () {
 
-                carregarDadosDaAPI();
+                carregarDados();
 
 
                 // Atualiza automaticamente
                 // a cada 30 segundos
 
                 setInterval(
-                    carregarDadosDaAPI,
+                    carregarDados,
                     30000
                 );
 
