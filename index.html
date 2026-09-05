@@ -1343,18 +1343,21 @@
             // Filtra pelo posto e combustível
 
             const dadosFiltrados =
-                dados
-                    .filter(
-                        item =>
-                            item.posto === filtroPosto &&
-                            item.combustivel === filtroCombustivel
-                    )
-                    .sort(
-                        (a, b) =>
-                            a.data.localeCompare(
-                                b.data
-                            )
-                    );
+    dados
+        .filter(
+            item =>
+                item.posto === filtroPosto &&
+                item.combustivel === filtroCombustivel
+        )
+        .sort((a, b) => {
+
+            if (a.valor !== b.valor) {
+                return a.valor - b.valor;
+            }
+
+            return a.data.localeCompare(b.data);
+
+        });
 
 
             // Caso não existam registros
