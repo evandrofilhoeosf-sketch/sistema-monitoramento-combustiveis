@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -48,33 +49,11 @@
         }
 
         .dashboard-titulo {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             margin-bottom: 20px;
         }
 
         .dashboard-titulo h2 {
             font-size: 28px;
-        }
-
-        #btnAtualizar {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 11px 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        #btnAtualizar:hover {
-            opacity: 0.9;
-        }
-
-        #btnAtualizar:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
         }
 
         /* CARDS */
@@ -90,7 +69,7 @@
             background: white;
             border-radius: 12px;
             padding: 25px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
         .card h3 {
@@ -104,6 +83,59 @@
             font-weight: bold;
         }
 
+        /* SEÇÕES */
+
+        .secao {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .secao h2 {
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        /* FILTROS */
+
+        .filtros-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .filtro {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filtro label {
+            font-weight: bold;
+            color: #374151;
+        }
+
+        .filtro select {
+            padding: 11px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .filtro select:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .descricao-filtro {
+            margin-bottom: 20px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
 
         /* TABELAS */
 
@@ -121,6 +153,7 @@
             color: white;
             padding: 12px;
             text-align: left;
+            white-space: nowrap;
         }
 
         td {
@@ -143,6 +176,15 @@
         .grafico-container {
             position: relative;
             height: 400px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .grafico-container h2 {
+            margin-bottom: 15px;
+            font-size: 20px;
         }
 
         /* RESPONSIVO */
@@ -169,14 +211,17 @@
                 grid-template-columns: 1fr;
             }
 
-            .dashboard-titulo {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-
             .dashboard-titulo h2 {
                 font-size: 24px;
+            }
+
+            .secao {
+                padding: 18px;
+            }
+
+            th,
+            td {
+                font-size: 14px;
             }
 
         }
@@ -187,6 +232,8 @@
 
 
 <body>
+
+    <!-- CABEÇALHO -->
 
     <header>
 
@@ -202,7 +249,6 @@
 
 
     <main>
-
 
         <!-- DASHBOARD -->
 
@@ -281,16 +327,150 @@
         </section>
 
 
+        <!-- CONSULTA 1 -->
 
-        <!-- FILTROS -->
-
-        <section class="filtros">
+        <section class="secao">
 
             <h2>
-                Filtros
+                Menor e Maior Preço por Combustível
             </h2>
 
-            <div class="filtros-container">
+            <div class="tabela-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Combustível</th>
+
+                            <th>Menor preço</th>
+
+                            <th>Posto (menor)</th>
+
+                            <th>Bairro (menor)</th>
+
+                            <th>Data da coleta (menor)</th>
+
+                            <th>Maior preço</th>
+
+                            <th>Posto (maior)</th>
+
+                            <th>Bairro (maior)</th>
+
+                            <th>Data da coleta (maior)</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="tabelaConsulta1"></tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- CONSULTA 2 -->
+
+        <section class="secao">
+
+            <h2>
+                Preço Médio por Posto e Combustível
+            </h2>
+
+            <div class="tabela-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Posto</th>
+
+                            <th>Bairro</th>
+
+                            <th>Combustível</th>
+
+                            <th>Preço médio</th>
+
+                            <th>Quantidade de amostras</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="tabelaConsulta2"></tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- CONSULTA 3 -->
+
+        <section class="secao">
+
+            <h2>
+                Último Preço Registrado
+            </h2>
+
+            <div class="tabela-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Posto</th>
+
+                            <th>Bairro</th>
+
+                            <th>Combustível</th>
+
+                            <th>Valor</th>
+
+                            <th>Data da coleta</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="tabelaConsulta3"></tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- CONSULTA 4 -->
+
+        <section class="secao">
+
+            <h2>
+                Evolução do Preço
+            </h2>
+
+            <p class="descricao-filtro">
+
+                Selecione um posto e um combustível para visualizar
+                a evolução dos preços ao longo das coletas.
+
+            </p>
+
+
+            <div
+                class="filtros-container"
+                style="margin-bottom: 20px;">
 
                 <div class="filtro">
 
@@ -301,7 +481,7 @@
                     <select id="filtroPosto">
 
                         <option value="">
-                            Todos
+                            Selecione um posto
                         </option>
 
                     </select>
@@ -318,7 +498,7 @@
                     <select id="filtroCombustivel">
 
                         <option value="">
-                            Todos
+                            Selecione um combustível
                         </option>
 
                     </select>
@@ -327,131 +507,28 @@
 
             </div>
 
-        </section>
-
-
-
-        <!-- CONSULTA 1 -->
-
-        <section class="secao">
-
-            <h2>
-                Menor e Maior Preço por Combustível
-            </h2>
 
             <div class="tabela-container">
 
                 <table>
 
                     <thead>
-    <tr>
-        <th>Combustível</th>
-        <th>Menor preço</th>
-        <th>Posto (menor)</th>
-        <th>Bairro (menor)</th>
-        <th>Data da coleta (menor)</th>
-        <th>Maior preço</th>
-        <th>Posto (maior)</th>
-        <th>Bairro (maior)</th>
-        <th>Data da coleta (maior)</th>
-    </tr>
-</thead>
 
-                    <tbody id="tabelaConsulta1"></tbody>
-
-                </table>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- CONSULTA 2 -->
-
-        <section class="secao">
-
-            <h2>
-                Preço Médio por Posto e Combustível
-            </h2>
-
-            <div class="tabela-container">
-
-                <table>
-
-                    <thead>
                         <tr>
+
                             <th>Posto</th>
+
                             <th>Bairro</th>
+
                             <th>Combustível</th>
-                            <th>Preço médio</th>
-                            <th>Quantidade de amostras</th>
+
+                            <th>Valor</th>
+
+                            <th>Data da coleta</th>
+
                         </tr>
+
                     </thead>
-
-                    <tbody id="tabelaConsulta2"></tbody>
-
-                </table>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- CONSULTA 3 -->
-
-        <section class="secao">
-
-            <h2>
-                Último Preço Registrado
-            </h2>
-
-            <div class="tabela-container">
-
-                <table>
-
-                    <thead>
-    <tr>
-        <th>Posto</th>
-        <th>Bairro</th>
-        <th>Combustível</th>
-        <th>Valor</th>
-        <th>Data da coleta</th>
-    </tr>
-</thead>
-
-                    <tbody id="tabelaConsulta3"></tbody>
-
-                </table>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- CONSULTA 4 -->
-
-        <section class="secao">
-
-            <h2>
-    Evolução do Preço
-</h2>
-
-            <div class="tabela-container">
-
-                <table>
-
-                    <thead>
-    <tr>
-        <th>Posto</th>
-        <th>Bairro</th>
-        <th>Combustível</th>
-        <th>Valor</th>
-        <th>Data da coleta</th>
-    </tr>
-</thead>
 
                     <tbody id="tabelaConsulta4"></tbody>
 
@@ -462,81 +539,49 @@
         </section>
 
 
-
         <!-- GRÁFICOS -->
 
-        <!-- CONSULTA 4 -->
-<section class="secao">
+        <section class="secao">
 
-    <h2>
-        Evolução do Preço
-    </h2>
+            <h2>
+                Gráficos
+            </h2>
 
-    <p style="margin-bottom: 20px; color: #6b7280;">
-        Selecione um posto e um combustível para visualizar
-        a evolução dos preços ao longo das coletas.
-    </p>
 
-    <div class="filtros-container" style="margin-bottom: 20px;">
+            <div class="graficos">
 
-        <div class="filtro">
+                <div class="grafico-container">
 
-            <label for="filtroPosto">
-                Posto
-            </label>
+                    <h2>
+                        Preço Médio por Combustível
+                    </h2>
 
-            <select id="filtroPosto">
-                <option value="">
-                    Selecione um posto
-                </option>
-            </select>
+                    <canvas id="graficoMedio"></canvas>
 
-        </div>
+                </div>
 
-        <div class="filtro">
 
-            <label for="filtroCombustivel">
-                Combustível
-            </label>
+                <div class="grafico-container">
 
-            <select id="filtroCombustivel">
-                <option value="">
-                    Selecione um combustível
-                </option>
-            </select>
+                    <h2>
+                        Preço Médio por Posto
+                    </h2>
 
-        </div>
+                    <canvas id="graficoPostos"></canvas>
 
-    </div>
+                </div>
 
-    <div class="tabela-container">
+            </div>
 
-        <table>
+        </section>
 
-            <thead>
+    </main>
 
-                <tr>
-                    <th>Posto</th>
-                    <th>Bairro</th>
-                    <th>Combustível</th>
-                    <th>Valor</th>
-                    <th>Data da coleta</th>
-                </tr>
-
-            </thead>
-
-            <tbody id="tabelaConsulta4"></tbody>
-
-        </table>
-
-    </div>
-
-</section>
 
     <script>
 
         // =====================================================
-        // CONFIGURAÇÃO DA API
+        // CONFIGURAÇÃO
         // =====================================================
 
         let dados = [];
@@ -544,9 +589,6 @@
         let graficoMedio = null;
 
         let graficoPostos = null;
-
-        let atualizando = false;
-
 
 
         // =====================================================
@@ -559,11 +601,9 @@
                 return "-";
             }
 
-            const dataLimpa =
-                data.substring(0, 10);
+            const dataLimpa = data.substring(0, 10);
 
-            const partes =
-                dataLimpa.split("-");
+            const partes = dataLimpa.split("-");
 
             if (partes.length !== 3) {
                 return data;
@@ -572,7 +612,6 @@
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
 
         }
-
 
 
         // =====================================================
@@ -592,76 +631,75 @@
         }
 
 
-
         // =====================================================
         // CARREGAR DADOS DO JSON
         // =====================================================
 
         async function carregarDados() {
 
-    if (atualizando) {
-        return;
-    }
+            try {
 
-    atualizando = true;
+                console.log(
+                    "Carregando dados do arquivo JSON..."
+                );
 
-    try {
+                const resposta =
+                    await fetch("dados.json");
 
-        console.log("Carregando dados do arquivo JSON...");
+                if (!resposta.ok) {
 
-        const resposta = await fetch("dados.json");
+                    throw new Error(
+                        "Não foi possível carregar o arquivo dados.json."
+                    );
 
-        if (!resposta.ok) {
-            throw new Error(
-                `Não foi possível carregar o arquivo dados.json.`
-            );
+                }
+
+                const dadosJSON =
+                    await resposta.json();
+
+                console.log(
+                    "Dados recebidos:",
+                    dadosJSON.length
+                );
+
+
+                dados = dadosJSON.map(item => ({
+
+                    id:
+                        item.id_verificacao,
+
+                    posto:
+                        item.nome_posto,
+
+                    bairro:
+                        item.bairro,
+
+                    combustivel:
+                        item.nome_combustivel,
+
+                    valor:
+                        Number(item.preco_verificado),
+
+                    data:
+                        item.data_verificacao.substring(0, 10)
+
+                }));
+
+
+                atualizarPagina();
+
+            }
+
+            catch (erro) {
+
+                console.error(
+                    "Erro ao carregar dados do JSON:",
+                    erro
+                );
+
+            }
+
         }
-
-        const dadosJSON = await resposta.json();
-
-        console.log(
-            "Dados recebidos:",
-            dadosJSON.length
-        );
-
-        dados = dadosJSON.map(item => ({
-            id:
-                item.id_verificacao,
-
-            posto:
-                item.nome_posto,
-
-            bairro:
-                item.bairro,
-
-            combustivel:
-                item.nome_combustivel,
-
-            valor:
-                Number(item.preco_verificado),
-
-            data:
-                item.data_verificacao.substring(0, 10)
-        }));
-
-        atualizarPagina();
-
-    }
-    catch (erro) {
-
-        console.error(
-            "Erro ao carregar dados do JSON:",
-            erro
-        );
-
-    }
-    finally {
-
-        atualizando = false;
-
-    }
-}
-
 
 
         // =====================================================
@@ -687,7 +725,6 @@
         }
 
 
-
         // =====================================================
         // DASHBOARD
         // =====================================================
@@ -699,15 +736,18 @@
                     "totalPostos"
                 );
 
+
             const elementoCombustiveis =
                 document.getElementById(
                     "totalCombustiveis"
                 );
 
+
             const elementoColetas =
                 document.getElementById(
                     "totalColetas"
                 );
+
 
             const elementoUltimaColeta =
                 document.getElementById(
@@ -715,24 +755,26 @@
                 );
 
 
-            const postos =
-                [
-                    ...new Set(
-                        dados.map(
-                            item => item.posto
-                        )
+            const postos = [
+
+                ...new Set(
+                    dados.map(
+                        item => item.posto
                     )
-                ];
+                )
+
+            ];
 
 
-            const combustiveis =
-                [
-                    ...new Set(
-                        dados.map(
-                            item => item.combustivel
-                        )
+            const combustiveis = [
+
+                ...new Set(
+                    dados.map(
+                        item => item.combustivel
                     )
-                ];
+                )
+
+            ];
 
 
             elementoPostos.textContent =
@@ -751,7 +793,9 @@
 
                 const datas =
                     dados
-                        .map(item => item.data)
+                        .map(
+                            item => item.data
+                        )
                         .sort()
                         .reverse();
 
@@ -760,6 +804,7 @@
                     formatarData(datas[0]);
 
             }
+
             else {
 
                 elementoUltimaColeta.textContent =
@@ -770,9 +815,8 @@
         }
 
 
-
         // =====================================================
-        // FILTROS
+        // FILTROS DA CONSULTA 4
         // =====================================================
 
         function carregarFiltros() {
@@ -781,6 +825,7 @@
                 document.getElementById(
                     "filtroPosto"
                 );
+
 
             const filtroCombustivel =
                 document.getElementById(
@@ -797,20 +842,22 @@
 
 
             filtroPosto.innerHTML =
-    '<option value="">Selecione um posto</option>';
-
-filtroCombustivel.innerHTML =
-    '<option value="">Selecione um combustível</option>';
+                '<option value="">Selecione um posto</option>';
 
 
-            const postos =
-                [
-                    ...new Set(
-                        dados.map(
-                            item => item.posto
-                        )
+            filtroCombustivel.innerHTML =
+                '<option value="">Selecione um combustível</option>';
+
+
+            const postos = [
+
+                ...new Set(
+                    dados.map(
+                        item => item.posto
                     )
-                ].sort();
+                )
+
+            ].sort();
 
 
             postos.forEach(posto => {
@@ -820,11 +867,14 @@ filtroCombustivel.innerHTML =
                         "option"
                     );
 
+
                 option.value =
                     posto;
 
+
                 option.textContent =
                     posto;
+
 
                 filtroPosto.appendChild(
                     option
@@ -833,14 +883,15 @@ filtroCombustivel.innerHTML =
             });
 
 
-            const combustiveis =
-                [
-                    ...new Set(
-                        dados.map(
-                            item => item.combustivel
-                        )
+            const combustiveis = [
+
+                ...new Set(
+                    dados.map(
+                        item => item.combustivel
                     )
-                ].sort();
+                )
+
+            ].sort();
 
 
             combustiveis.forEach(combustivel => {
@@ -850,11 +901,14 @@ filtroCombustivel.innerHTML =
                         "option"
                     );
 
+
                 option.value =
                     combustivel;
 
+
                 option.textContent =
                     combustivel;
+
 
                 filtroCombustivel.appendChild(
                     option
@@ -864,12 +918,14 @@ filtroCombustivel.innerHTML =
 
 
             if (
+
                 [...filtroPosto.options]
                     .some(
                         option =>
                             option.value ===
                             postoSelecionado
                     )
+
             ) {
 
                 filtroPosto.value =
@@ -879,12 +935,14 @@ filtroCombustivel.innerHTML =
 
 
             if (
+
                 [...filtroCombustivel.options]
                     .some(
                         option =>
                             option.value ===
                             combustivelSelecionado
                     )
+
             ) {
 
                 filtroCombustivel.value =
@@ -903,118 +961,134 @@ filtroCombustivel.innerHTML =
         }
 
 
-
         // =====================================================
         // CONSULTA 1
         // =====================================================
-function executarConsulta1() {
 
-    const tabela =
-        document.getElementById(
-            "tabelaConsulta1"
-        );
+        function executarConsulta1() {
 
-    tabela.innerHTML = "";
+            const tabela =
+                document.getElementById(
+                    "tabelaConsulta1"
+                );
 
-    const grupos = {};
 
-    dados.forEach(item => {
+            tabela.innerHTML = "";
 
-        if (!grupos[item.combustivel]) {
 
-            grupos[item.combustivel] = [];
+            const grupos = {};
+
+
+            dados.forEach(item => {
+
+                if (!grupos[item.combustivel]) {
+
+                    grupos[item.combustivel] = [];
+
+                }
+
+                grupos[item.combustivel].push(item);
+
+            });
+
+
+            Object.keys(grupos)
+                .sort()
+                .forEach(combustivel => {
+
+                    const registros =
+                        grupos[combustivel];
+
+
+                    // Menor preço
+
+                    const menor =
+                        registros.reduce(
+                            (menorAtual, item) => {
+
+                                if (
+                                    item.valor <
+                                    menorAtual.valor
+                                ) {
+
+                                    return item;
+
+                                }
+
+                                return menorAtual;
+
+                            }
+                        );
+
+
+                    // Maior preço
+
+                    const maior =
+                        registros.reduce(
+                            (maiorAtual, item) => {
+
+                                if (
+                                    item.valor >
+                                    maiorAtual.valor
+                                ) {
+
+                                    return item;
+
+                                }
+
+                                return maiorAtual;
+
+                            }
+                        );
+
+
+                    const linha =
+                        tabela.insertRow();
+
+
+                    linha.innerHTML = `
+
+                        <td>
+                            ${combustivel}
+                        </td>
+
+                        <td>
+                            ${formatarValor(menor.valor)}
+                        </td>
+
+                        <td>
+                            ${menor.posto}
+                        </td>
+
+                        <td>
+                            ${menor.bairro}
+                        </td>
+
+                        <td>
+                            ${formatarData(menor.data)}
+                        </td>
+
+                        <td>
+                            ${formatarValor(maior.valor)}
+                        </td>
+
+                        <td>
+                            ${maior.posto}
+                        </td>
+
+                        <td>
+                            ${maior.bairro}
+                        </td>
+
+                        <td>
+                            ${formatarData(maior.data)}
+                        </td>
+
+                    `;
+
+                });
+
         }
-
-        grupos[item.combustivel].push(item);
-    });
-
-
-    Object.keys(grupos)
-        .sort()
-        .forEach(combustivel => {
-
-            const registros =
-                grupos[combustivel];
-
-
-            // Encontra o registro com menor preço
-            const menor =
-                registros.reduce(
-                    (menorAtual, item) => {
-
-                        if (
-                            item.valor <
-                            menorAtual.valor
-                        ) {
-                            return item;
-                        }
-
-                        return menorAtual;
-                    }
-                );
-
-
-            // Encontra o registro com maior preço
-            const maior =
-                registros.reduce(
-                    (maiorAtual, item) => {
-
-                        if (
-                            item.valor >
-                            maiorAtual.valor
-                        ) {
-                            return item;
-                        }
-
-                        return maiorAtual;
-                    }
-                );
-
-
-            const linha =
-                tabela.insertRow();
-
-
-            linha.innerHTML = `
-    <td>
-        ${combustivel}
-    </td>
-
-    <td>
-        ${formatarValor(menor.valor)}
-    </td>
-
-    <td>
-        ${menor.posto}
-    </td>
-
-    <td>
-        ${menor.bairro}
-    </td>
-
-    <td>
-        ${formatarData(menor.data)}
-    </td>
-
-    <td>
-        ${formatarValor(maior.valor)}
-    </td>
-
-    <td>
-        ${maior.posto}
-    </td>
-
-    <td>
-        ${maior.bairro}
-    </td>
-
-    <td>
-        ${formatarData(maior.data)}
-    </td>
-`;
-        });
-}
-
 
 
         // =====================================================
@@ -1041,14 +1115,24 @@ function executarConsulta1() {
                     `${item.posto}|${item.combustivel}`;
 
 
-                            if (!grupos[chave]) {
-                grupos[chave] = {
-                    posto: item.posto,
-                    bairro: item.bairro,
-                    combustivel: item.combustivel,
-                    valores: []
-                };
-            }
+                if (!grupos[chave]) {
+
+                    grupos[chave] = {
+
+                        posto:
+                            item.posto,
+
+                        bairro:
+                            item.bairro,
+
+                        combustivel:
+                            item.combustivel,
+
+                        valores: []
+
+                    };
+
+                }
 
 
                 grupos[chave]
@@ -1086,17 +1170,32 @@ function executarConsulta1() {
 
 
                     linha.innerHTML = `
-                      <td>${grupo.posto}</td>
-                      <td>${grupo.bairro}</td>
-                      <td>${grupo.combustivel}</td>
-                      <td>${formatarValor(media)}</td>
-                      <td>${grupo.valores.length}</td>
+
+                        <td>
+                            ${grupo.posto}
+                        </td>
+
+                        <td>
+                            ${grupo.bairro}
+                        </td>
+
+                        <td>
+                            ${grupo.combustivel}
+                        </td>
+
+                        <td>
+                            ${formatarValor(media)}
+                        </td>
+
+                        <td>
+                            ${grupo.valores.length}
+                        </td>
+
                     `;
 
                 });
 
         }
-
 
 
         // =====================================================
@@ -1124,9 +1223,12 @@ function executarConsulta1() {
 
 
                 if (
+
                     !grupos[chave] ||
+
                     item.data >
                     grupos[chave].data
+
                 ) {
 
                     grupos[chave] =
@@ -1152,120 +1254,174 @@ function executarConsulta1() {
 
 
                     linha.innerHTML = `
-    <td>${item.posto}</td>
-    <td>${item.bairro}</td>
-    <td>${item.combustivel}</td>
-    <td>${formatarValor(item.valor)}</td>
-    <td>${formatarData(item.data)}</td>
-`;
+
+                        <td>
+                            ${item.posto}
+                        </td>
+
+                        <td>
+                            ${item.bairro}
+                        </td>
+
+                        <td>
+                            ${item.combustivel}
+                        </td>
+
+                        <td>
+                            ${formatarValor(item.valor)}
+                        </td>
+
+                        <td>
+                            ${formatarData(item.data)}
+                        </td>
+
+                    `;
 
                 });
 
         }
 
 
-
         // =====================================================
-// CONSULTA 4
-// =====================================================
-function executarConsulta4() {
+        // CONSULTA 4
+        // =====================================================
 
-    const tabela =
-        document.getElementById(
-            "tabelaConsulta4"
-        );
+        function executarConsulta4() {
 
-    const filtroPosto =
-        document.getElementById(
-            "filtroPosto"
-        ).value;
-
-    const filtroCombustivel =
-        document.getElementById(
-            "filtroCombustivel"
-        ).value;
-
-    tabela.innerHTML = "";
+            const tabela =
+                document.getElementById(
+                    "tabelaConsulta4"
+                );
 
 
-    // É necessário selecionar os dois filtros
-    if (!filtroPosto || !filtroCombustivel) {
-
-        const linha = tabela.insertRow();
-
-        const celula = linha.insertCell();
-
-        celula.colSpan = 5;
-
-        celula.textContent =
-            "Selecione um posto e um combustível para visualizar a evolução dos preços.";
-
-        celula.style.textAlign = "center";
-
-        return;
-    }
+            const filtroPosto =
+                document.getElementById(
+                    "filtroPosto"
+                ).value;
 
 
-    // Filtra exatamente pelo posto E pelo combustível
-    const dadosFiltrados =
-        dados
-            .filter(item =>
-                item.posto === filtroPosto &&
-                item.combustivel === filtroCombustivel
-            )
-            .sort((a, b) =>
-                a.data.localeCompare(b.data)
-            );
+            const filtroCombustivel =
+                document.getElementById(
+                    "filtroCombustivel"
+                ).value;
 
 
-    // Caso não existam registros
-    if (dadosFiltrados.length === 0) {
-
-        const linha = tabela.insertRow();
-
-        const celula = linha.insertCell();
-
-        celula.colSpan = 5;
-
-        celula.textContent =
-            "Não existem registros para este posto e combustível.";
-
-        celula.style.textAlign = "center";
-
-        return;
-    }
+            tabela.innerHTML = "";
 
 
-    // Mostra a evolução cronológica dos preços
-    dadosFiltrados.forEach(item => {
+            // É necessário selecionar os dois filtros
 
-        const linha =
-            tabela.insertRow();
+            if (
+                !filtroPosto ||
+                !filtroCombustivel
+            ) {
 
-        linha.innerHTML = `
-            <td>
-                ${item.posto}
-            </td>
+                const linha =
+                    tabela.insertRow();
 
-            <td>
-                ${item.bairro}
-            </td>
 
-            <td>
-                ${item.combustivel}
-            </td>
+                const celula =
+                    linha.insertCell();
 
-            <td>
-                ${formatarValor(item.valor)}
-            </td>
 
-            <td>
-                ${formatarData(item.data)}
-            </td>
-        `;
-    });
-}
+                celula.colSpan = 5;
 
+
+                celula.textContent =
+                    "Selecione um posto e um combustível para visualizar a evolução dos preços.";
+
+
+                celula.style.textAlign =
+                    "center";
+
+
+                return;
+
+            }
+
+
+            // Filtra pelo posto e combustível
+
+            const dadosFiltrados =
+                dados
+                    .filter(
+                        item =>
+                            item.posto === filtroPosto &&
+                            item.combustivel === filtroCombustivel
+                    )
+                    .sort(
+                        (a, b) =>
+                            a.data.localeCompare(
+                                b.data
+                            )
+                    );
+
+
+            // Caso não existam registros
+
+            if (
+                dadosFiltrados.length === 0
+            ) {
+
+                const linha =
+                    tabela.insertRow();
+
+
+                const celula =
+                    linha.insertCell();
+
+
+                celula.colSpan = 5;
+
+
+                celula.textContent =
+                    "Não existem registros para este posto e combustível.";
+
+
+                celula.style.textAlign =
+                    "center";
+
+
+                return;
+
+            }
+
+
+            // Mostra a evolução cronológica
+
+            dadosFiltrados.forEach(item => {
+
+                const linha =
+                    tabela.insertRow();
+
+
+                linha.innerHTML = `
+
+                    <td>
+                        ${item.posto}
+                    </td>
+
+                    <td>
+                        ${item.bairro}
+                    </td>
+
+                    <td>
+                        ${item.combustivel}
+                    </td>
+
+                    <td>
+                        ${formatarValor(item.valor)}
+                    </td>
+
+                    <td>
+                        ${formatarData(item.data)}
+                    </td>
+
+                `;
+
+            });
+
+        }
 
 
         // =====================================================
@@ -1281,6 +1437,9 @@ function executarConsulta4() {
         }
 
 
+        // =====================================================
+        // GRÁFICO DE PREÇO MÉDIO POR COMBUSTÍVEL
+        // =====================================================
 
         function criarGraficoMedio() {
 
@@ -1288,6 +1447,11 @@ function executarConsulta4() {
                 document.getElementById(
                     "graficoMedio"
                 );
+
+
+            if (!canvas) {
+                return;
+            }
 
 
             if (graficoMedio) {
@@ -1302,9 +1466,7 @@ function executarConsulta4() {
 
             dados.forEach(item => {
 
-                if (
-                    !grupos[item.combustivel]
-                ) {
+                if (!grupos[item.combustivel]) {
 
                     grupos[item.combustivel] =
                         [];
@@ -1319,7 +1481,8 @@ function executarConsulta4() {
 
 
             const labels =
-                Object.keys(grupos).sort();
+                Object.keys(grupos)
+                    .sort();
 
 
             const valores =
@@ -1392,6 +1555,9 @@ function executarConsulta4() {
         }
 
 
+        // =====================================================
+        // GRÁFICO DE PREÇO MÉDIO POR POSTO
+        // =====================================================
 
         function criarGraficoPostos() {
 
@@ -1399,6 +1565,11 @@ function executarConsulta4() {
                 document.getElementById(
                     "graficoPostos"
                 );
+
+
+            if (!canvas) {
+                return;
+            }
 
 
             if (graficoPostos) {
@@ -1428,7 +1599,8 @@ function executarConsulta4() {
 
 
             const labels =
-                Object.keys(grupos).sort();
+                Object.keys(grupos)
+                    .sort();
 
 
             const valores =
@@ -1499,19 +1671,24 @@ function executarConsulta4() {
                 );
 
         }
+
+
         // =====================================================
         // INICIALIZAÇÃO
         // =====================================================
 
         document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-        carregarDados();
-    }
-);
-    </script>
+            "DOMContentLoaded",
+            function () {
 
+                carregarDados();
+
+            }
+        );
+
+    </script>
 
 </body>
 
 </html>
+```
