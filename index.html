@@ -167,22 +167,34 @@
 
         .graficos {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            grid-template-columns: 1fr;
+            gap: 25px;
         }
 
         .grafico-container {
             position: relative;
-            height: 450px;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
             background: white;
             border-radius: 12px;
-            padding: 20px;
+            padding: 22px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
+        .grafico-container:nth-child(2) {
+            height: 760px;
+        }
+
         .grafico-container h2 {
-            margin-bottom: 15px;
+            margin-bottom: 18px;
             font-size: 20px;
+        }
+
+        .grafico-container canvas {
+            width: 100% !important;
+            flex: 1;
+            min-height: 0;
         }
 
         /* RESPONSIVO */
@@ -223,7 +235,12 @@
             }
 
             .grafico-container {
-                height: 400px;
+                height: 450px;
+                padding: 16px;
+            }
+
+            .grafico-container:nth-child(2) {
+                height: 700px;
             }
 
         }
