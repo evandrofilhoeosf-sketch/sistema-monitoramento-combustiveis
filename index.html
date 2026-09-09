@@ -1,1740 +1,700 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Monitoramento de Preços de Combustíveis</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;color:#222}
+header{background:#1f2937;color:#fff;padding:25px;text-align:center}
+header h1{margin-bottom:8px} header p{color:#d1d5db}
+main{width:95%;max-width:1400px;margin:30px auto}
+.dashboard-titulo{margin-bottom:20px}.dashboard-titulo h2{font-size:28px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:30px}
+.card,.secao,.grafico-container{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.card{padding:25px}.card h3{font-size:15px;color:#6b7280;margin-bottom:12px}
+.card .valor{font-size:30px;font-weight:bold}
+.secao{padding:25px;margin-bottom:30px}.secao h2{margin-bottom:20px;font-size:22px}
+.filtros-container{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.filtro{display:flex;flex-direction:column;gap:8px}.filtro label{font-weight:bold;color:#374151}
+.filtro select,.feedback-form input,.feedback-form textarea{padding:11px;border:1px solid #d1d5db;border-radius:8px;background:#fff;font-size:14px}
+.filtro select:focus,.feedback-form input:focus,.feedback-form textarea:focus{outline:none;border-color:#2563eb}
+.descricao-filtro,.feedback-descricao{margin-bottom:20px;color:#6b7280;line-height:1.5}
+.filtros-tabela{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.filtros-tabela-um{grid-template-columns:minmax(220px,420px)}
+.tabela-container{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{background:#1f2937;color:#fff;padding:12px;text-align:center;white-space:nowrap}
+td{padding:11px;border-bottom:1px solid #e5e7eb;text-align:center;vertical-align:middle}
+tr:hover{background:#f9fafb}
+.graficos{
+display:grid;
+grid-template-columns:1fr;
+gap:25px;
+}
 
-    <title>Sistema de Monitoramento de Preços de Combustíveis</title>
+.grafico-container{
+position:relative;
+height:520px;
+min-height:0;
+display:flex;
+flex-direction:column;
+overflow:hidden;
+padding:20px;
+}
 
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+.grafico-container:nth-child(2){
+height:900px;
+}
 
-    <style>
+.grafico-container h2{
+margin-bottom:15px;
+font-size:20px;
+flex-shrink:0;
+}
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+.filtros-grafico{
+display:grid;
+grid-template-columns:minmax(220px, 420px);
+gap:15px;
+margin-bottom:18px;
+flex-shrink:0;
+}
 
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f4f6f8;
-            color: #222;
-        }
+.filtros-grafico-dois{
+grid-template-columns:1fr 1fr;
+}
 
-        header {
-            background: #1f2937;
-            color: white;
-            padding: 25px;
-            text-align: center;
-        }
+.filtros-grafico .filtro select{
+width:100%;
+}
 
-        header h1 {
-            margin-bottom: 8px;
-        }
-
-        header p {
-            color: #d1d5db;
-        }
-
-        main {
-            width: 95%;
-            max-width: 1400px;
-            margin: 30px auto;
-        }
-
-        .dashboard-titulo {
-            margin-bottom: 20px;
-        }
-
-        .dashboard-titulo h2 {
-            font-size: 28px;
-        }
-
-        /* CARDS */
-
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        .card h3 {
-            font-size: 15px;
-            color: #6b7280;
-            margin-bottom: 12px;
-        }
-
-        .card .valor {
-            font-size: 30px;
-            font-weight: bold;
-        }
-
-        /* SEÇÕES */
-
-        .secao {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        .secao h2 {
-            margin-bottom: 20px;
-            font-size: 22px;
-        }
-
-        /* FILTROS */
-
-        .filtros-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .filtro {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .filtro label {
-            font-weight: bold;
-            color: #374151;
-        }
-
-        .filtro select {
-            padding: 11px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            background: white;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .filtro select:focus {
-            outline: none;
-            border-color: #2563eb;
-        }
-
-        .descricao-filtro {
-            margin-bottom: 20px;
-            color: #6b7280;
-            line-height: 1.5;
-        }
-
-        /* TABELAS */
-
-        .tabela-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th {
-            background: #1f2937;
-            color: white;
-            padding: 12px;
-            text-align: left;
-            white-space: nowrap;
-        }
-
-        td {
-            padding: 11px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        tr:hover {
-            background: #f9fafb;
-        }
-
-        /* GRÁFICOS */
-
-        .graficos {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 25px;
-        }
-
-        .grafico-container {
-            position: relative;
-            height: 500px;
-            display: flex;
-            flex-direction: column;
-            background: white;
-            border-radius: 12px;
-            padding: 22px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        .grafico-container:nth-child(2) {
-            height: 760px;
-        }
-
-        .grafico-container h2 {
-            margin-bottom: 18px;
-            font-size: 20px;
-        }
-
-        .grafico-container canvas {
-            width: 100% !important;
-            flex: 1;
-            min-height: 0;
-        }
-
-        /* RESPONSIVO */
-
-        @media (max-width: 900px) {
-
-            .cards {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .graficos {
-                grid-template-columns: 1fr;
-            }
-
-        }
-
-        @media (max-width: 600px) {
-
-            .cards {
-                grid-template-columns: 1fr;
-            }
-
-            .filtros-container {
-                grid-template-columns: 1fr;
-            }
-
-            .dashboard-titulo h2 {
-                font-size: 24px;
-            }
-
-            .secao {
-                padding: 18px;
-            }
-
-            th,
-            td {
-                font-size: 14px;
-            }
-
-            .grafico-container {
-                height: 450px;
-                padding: 16px;
-            }
-
-            .grafico-container:nth-child(2) {
-                height: 700px;
-            }
-
-        }
-
-    </style>
-
-    <link rel="icon" type="image/png" href="favicon.png">
-
+.grafico-container canvas{
+width:100% !important;
+height:auto !important;
+flex:1 1 auto;
+min-height:0;
+}
+.acessos{text-align:center;margin-top:10px;color:#374151;font-size:15px}
+.acessos strong{font-size:22px}
+.feedback-form{max-width:800px;margin:0 auto 30px}
+.feedback-form input[type=text]{width:100%;margin:8px 0 16px}
+.feedback-form textarea{width:100%;min-height:110px;resize:vertical;margin:8px 0 12px}
+.estrelas{display:flex;flex-direction:row-reverse;justify-content:flex-end;gap:5px;margin:10px 0 20px}
+.estrelas input{display:none}.estrelas label{font-size:36px;color:#d1d5db;cursor:pointer}
+.estrelas label:hover,.estrelas label:hover~label,.estrelas input:checked~label{color:#f59e0b}
+.botao-feedback{border:0;border-radius:8px;padding:11px 18px;background:#1f2937;color:#fff;font-size:14px;cursor:pointer}
+.botao-feedback:hover{opacity:.9}.mensagem-feedback{margin-top:12px;font-size:14px}
+.lista-feedbacks{display:grid;gap:15px}.feedback-item{border:1px solid #e5e7eb;border-radius:10px;padding:18px;background:#fafafa}
+.feedback-cabecalho{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.feedback-estrelas{color:#f59e0b;letter-spacing:2px}.feedback-nome{font-weight:bold}
+.feedback-comentario{color:#374151;line-height:1.5}.feedback-data{margin-top:8px;color:#9ca3af;font-size:12px}
+@media(max-width:900px){
+.cards{grid-template-columns:repeat(2,1fr)}
+.graficos{grid-template-columns:1fr}
+.grafico-container{height:500px}
+.grafico-container:nth-child(2){height:900px}
+}
+@media(max-width:600px){
+.cards{grid-template-columns:1fr}
+.filtros-container{grid-template-columns:1fr}
+.dashboard-titulo h2{font-size:24px}
+.secao{padding:18px}
+th,td{font-size:14px}
+.filtros-tabela,.filtros-tabela-um{grid-template-columns:1fr}
+.grafico-container{height:460px;padding:16px}
+.grafico-container:nth-child(2){height:900px}
+.grafico-container h2{font-size:18px}
+.filtros-grafico,.filtros-grafico-dois{grid-template-columns:1fr}
+.grafico-container canvas{min-width:0}
+.feedback-cabecalho{flex-direction:column;align-items:flex-start}}
+</style>
 </head>
 
 <body>
-
-    <!-- CABEÇALHO -->
-
-    <header>
-
-        <h1>
-            Sistema de Monitoramento de Preços de Combustíveis
-        </h1>
-
-        <p>
-            Consulta e análise dos preços coletados
-        </p>
-
-    </header>
-
-    <main>
-
-        <!-- DASHBOARD -->
-
-        <div class="dashboard-titulo">
-
-            <h2>
-                Dashboard
-            </h2>
-
-        </div>
-
-        <!-- CARDS -->
-
-        <section class="cards">
-
-            <div class="card">
-
-                <h3>
-                    Total de Postos
-                </h3>
-
-                <div class="valor" id="totalPostos">
-                    -
-                </div>
-
-            </div>
-
-            <div class="card">
-
-                <h3>
-                    Combustíveis
-                </h3>
-
-                <div class="valor" id="totalCombustiveis">
-                    -
-                </div>
-
-            </div>
-
-            <div class="card">
-
-                <h3>
-                    Total de Coletas
-                </h3>
-
-                <div class="valor" id="totalColetas">
-                    -
-                </div>
-
-            </div>
-
-            <div class="card">
-
-                <h3>
-                    Última Coleta
-                </h3>
-
-                <div class="valor" id="ultimaColeta">
-                    -
-                </div>
-
-            </div>
-
-        </section>
-
-        <!-- CONSULTA 1 -->
-
-        <section class="secao">
-
-            <h2>
-                Menor e Maior Preço por Combustível
-            </h2>
-
-            <div class="tabela-container">
-
-                <table>
-
-                    <thead>
-
-                        <tr>
-
-                            <th>Combustível</th>
-                            <th>Menor preço</th>
-                            <th>Posto (menor)</th>
-                            <th>Bairro (menor)</th>
-                            <th>Data da coleta (menor)</th>
-                            <th>Maior preço</th>
-                            <th>Posto (maior)</th>
-                            <th>Bairro (maior)</th>
-                            <th>Data da coleta (maior)</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody id="tabelaConsulta1"></tbody>
-
-                </table>
-
-            </div>
-
-        </section>
-
-        <!-- CONSULTA 2 -->
-
-        <section class="secao">
-
-            <h2>
-                Preço Médio por Posto e Combustível
-            </h2>
-
-            <div class="tabela-container">
-
-                <table>
-
-                    <thead>
-
-                        <tr>
-
-                            <th>Posto</th>
-                            <th>Bairro</th>
-                            <th>Combustível</th>
-                            <th>Preço médio</th>
-                            <th>Quantidade de amostras</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody id="tabelaConsulta2"></tbody>
-
-                </table>
-
-            </div>
-
-        </section>
-
-        <!-- CONSULTA 3 -->
-
-        <section class="secao">
-
-            <h2>
-                Último Preço Registrado
-            </h2>
-
-            <div class="tabela-container">
-
-                <table>
-
-                    <thead>
-
-                        <tr>
-
-                            <th>Posto</th>
-                            <th>Bairro</th>
-                            <th>Combustível</th>
-                            <th>Valor</th>
-                            <th>Data da coleta</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody id="tabelaConsulta3"></tbody>
-
-                </table>
-
-            </div>
-
-        </section>
-
-        <!-- CONSULTA 4 -->
-
-        <section class="secao">
-
-            <h2>
-                Evolução do Preço
-            </h2>
-
-            <p class="descricao-filtro">
-
-                Selecione um posto e um combustível para visualizar
-                a evolução dos preços ao longo das coletas.
-
-            </p>
-
-            <div class="filtros-container" style="margin-bottom: 20px;">
-
-                <div class="filtro">
-
-                    <label for="filtroPosto">
-                        Posto
-                    </label>
-
-                    <select id="filtroPosto">
-
-                        <option value="">
-                            Selecione um posto
-                        </option>
-
-                    </select>
-
-                </div>
-
-                <div class="filtro">
-
-                    <label for="filtroCombustivel">
-                        Combustível
-                    </label>
-
-                    <select id="filtroCombustivel">
-
-                        <option value="">
-                            Selecione um combustível
-                        </option>
-
-                    </select>
-
-                </div>
-
-            </div>
-
-            <div class="tabela-container">
-
-                <table>
-
-                    <thead>
-
-                        <tr>
-
-                            <th>Posto</th>
-                            <th>Bairro</th>
-                            <th>Combustível</th>
-                            <th>Valor</th>
-                            <th>Data da coleta</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody id="tabelaConsulta4"></tbody>
-
-                </table>
-
-            </div>
-
-        </section>
-
-        <!-- GRÁFICOS -->
-
-        <section class="secao">
-
-            <h2>
-                Gráficos
-            </h2>
-
-            <div class="graficos">
-
-                <div class="grafico-container">
-
-                    <h2>
-                        Evolução do Preço Médio por Combustível
-                    </h2>
-
-                    <canvas id="graficoMedio"></canvas>
-
-                </div>
-
-                <div class="grafico-container">
-
-                    <h2>
-                        Evolução do Preço Médio por Posto e Combustível
-                    </h2>
-
-                    <canvas id="graficoPostos"></canvas>
-
-                </div>
-
-            </div>
-
-        </section>
-
-    </main>
-
-    <script>
-
-        // =====================================================
-        // CONFIGURAÇÃO
-        // =====================================================
-
-        let dados = [];
-
-        let graficoMedio = null;
-
-        let graficoPostos = null;
-
-        // =====================================================
-        // FORMATAR DATA
-        // =====================================================
-
-        function formatarData(data) {
-
-            if (!data) {
-                return "-";
-            }
-
-            const dataLimpa = data.substring(0, 10);
-
-            const partes = dataLimpa.split("-");
-
-            if (partes.length !== 3) {
-                return data;
-            }
-
-            return `${partes[2]}/${partes[1]}/${partes[0]}`;
-
-        }
-
-        // =====================================================
-        // FORMATAR VALOR
-        // =====================================================
-
-        function formatarValor(valor) {
-
-            return Number(valor).toLocaleString(
-                "pt-BR",
-                {
-                    style: "currency",
-                    currency: "BRL"
-                }
-            );
-
-        }
-
-        // =====================================================
-        // CARREGAR DADOS DO JSON
-        // =====================================================
-
-        async function carregarDados() {
-
-            try {
-
-                console.log(
-                    "Carregando dados do arquivo JSON..."
-                );
-
-                const resposta =
-                    await fetch("dados.json");
-
-                if (!resposta.ok) {
-
-                    throw new Error(
-                        "Não foi possível carregar o arquivo dados.json."
-                    );
-
-                }
-
-                const dadosJSON =
-                    await resposta.json();
-
-                console.log(
-                    "Dados recebidos:",
-                    dadosJSON.length
-                );
-
-                dados = dadosJSON.map(item => ({
-
-                    id:
-                        item.id_verificacao,
-
-                    posto:
-                        item.nome_posto,
-
-                    bairro:
-                        item.bairro,
-
-                    combustivel:
-                        item.nome_combustivel,
-
-                    valor:
-                        Number(item.preco_verificado),
-
-                    data:
-                        item.data_verificacao.substring(0, 10)
-
-                }));
-
-                atualizarPagina();
-
-            }
-
-            catch (erro) {
-
-                console.error(
-                    "Erro ao carregar dados do JSON:",
-                    erro
-                );
-
-            }
-
-        }
-
-        // =====================================================
-        // ATUALIZAR TODA A PÁGINA
-        // =====================================================
-
-        function atualizarPagina() {
-
-            carregarDashboard();
-
-            carregarFiltros();
-
-            executarConsulta1();
-
-            executarConsulta2();
-
-            executarConsulta3();
-
-            executarConsulta4();
-
-            criarGraficos();
-
-        }
-
-        // =====================================================
-        // DASHBOARD
-        // =====================================================
-
-        function carregarDashboard() {
-
-            const elementoPostos =
-                document.getElementById(
-                    "totalPostos"
-                );
-
-            const elementoCombustiveis =
-                document.getElementById(
-                    "totalCombustiveis"
-                );
-
-            const elementoColetas =
-                document.getElementById(
-                    "totalColetas"
-                );
-
-            const elementoUltimaColeta =
-                document.getElementById(
-                    "ultimaColeta"
-                );
-
-            const postos = [
-
-                ...new Set(
-                    dados.map(
-                        item => item.posto
-                    )
-                )
-
-            ];
-
-            const combustiveis = [
-
-                ...new Set(
-                    dados.map(
-                        item => item.combustivel
-                    )
-                )
-
-            ];
-
-            elementoPostos.textContent =
-                postos.length;
-
-            elementoCombustiveis.textContent =
-                combustiveis.length;
-
-            elementoColetas.textContent =
-                dados.length;
-
-            if (dados.length > 0) {
-
-                const datas =
-                    dados
-                        .map(
-                            item => item.data
-                        )
-                        .sort()
-                        .reverse();
-
-                elementoUltimaColeta.textContent =
-                    formatarData(datas[0]);
-
-            }
-
-            else {
-
-                elementoUltimaColeta.textContent =
-                    "-";
-
-            }
-
-        }
-
-        // =====================================================
-        // FILTROS DA CONSULTA 4
-        // =====================================================
-
-        function carregarFiltros() {
-
-            const filtroPosto =
-                document.getElementById(
-                    "filtroPosto"
-                );
-
-            const filtroCombustivel =
-                document.getElementById(
-                    "filtroCombustivel"
-                );
-
-            const postoSelecionado =
-                filtroPosto.value;
-
-            const combustivelSelecionado =
-                filtroCombustivel.value;
-
-            filtroPosto.innerHTML =
-                '<option value="">Selecione um posto</option>';
-
-            filtroCombustivel.innerHTML =
-                '<option value="">Selecione um combustível</option>';
-
-            const postos = [
-
-                ...new Set(
-                    dados.map(
-                        item => item.posto
-                    )
-                )
-
-            ].sort();
-
-            postos.forEach(posto => {
-
-                const option =
-                    document.createElement(
-                        "option"
-                    );
-
-                option.value =
-                    posto;
-
-                option.textContent =
-                    posto;
-
-                filtroPosto.appendChild(
-                    option
-                );
-
-            });
-
-            const combustiveis = [
-
-                ...new Set(
-                    dados.map(
-                        item => item.combustivel
-                    )
-                )
-
-            ].sort();
-
-            combustiveis.forEach(combustivel => {
-
-                const option =
-                    document.createElement(
-                        "option"
-                    );
-
-                option.value =
-                    combustivel;
-
-                option.textContent =
-                    combustivel;
-
-                filtroCombustivel.appendChild(
-                    option
-                );
-
-            });
-
-            if (
-
-                [...filtroPosto.options]
-                    .some(
-                        option =>
-                            option.value ===
-                            postoSelecionado
-                    )
-
-            ) {
-
-                filtroPosto.value =
-                    postoSelecionado;
-
-            }
-
-            if (
-
-                [...filtroCombustivel.options]
-                    .some(
-                        option =>
-                            option.value ===
-                            combustivelSelecionado
-                    )
-
-            ) {
-
-                filtroCombustivel.value =
-                    combustivelSelecionado;
-
-            }
-
-            filtroPosto.onchange =
-                executarConsulta4;
-
-            filtroCombustivel.onchange =
-                executarConsulta4;
-
-        }
-
-        // =====================================================
-        // CONSULTA 1
-        // =====================================================
-
-        function executarConsulta1() {
-
-            const tabela =
-                document.getElementById(
-                    "tabelaConsulta1"
-                );
-
-            tabela.innerHTML = "";
-
-            const grupos = {};
-
-            dados.forEach(item => {
-
-                if (!grupos[item.combustivel]) {
-
-                    grupos[item.combustivel] = [];
-
-                }
-
-                grupos[item.combustivel].push(item);
-
-            });
-
-            Object.keys(grupos)
-                .sort()
-                .forEach(combustivel => {
-
-                    const registros =
-                        grupos[combustivel];
-
-                    const menor =
-                        registros.reduce(
-                            (menorAtual, item) => {
-
-                                if (
-                                    item.valor <
-                                    menorAtual.valor
-                                ) {
-
-                                    return item;
-
-                                }
-
-                                return menorAtual;
-
-                            }
-                        );
-
-                    const maior =
-                        registros.reduce(
-                            (maiorAtual, item) => {
-
-                                if (
-                                    item.valor >
-                                    maiorAtual.valor
-                                ) {
-
-                                    return item;
-
-                                }
-
-                                return maiorAtual;
-
-                            }
-                        );
-
-                    const linha =
-                        tabela.insertRow();
-
-                    linha.innerHTML = `
-
-                        <td>
-                            ${combustivel}
-                        </td>
-
-                        <td>
-                            ${formatarValor(menor.valor)}
-                        </td>
-
-                        <td>
-                            ${menor.posto}
-                        </td>
-
-                        <td>
-                            ${menor.bairro}
-                        </td>
-
-                        <td>
-                            ${formatarData(menor.data)}
-                        </td>
-
-                        <td>
-                            ${formatarValor(maior.valor)}
-                        </td>
-
-                        <td>
-                            ${maior.posto}
-                        </td>
-
-                        <td>
-                            ${maior.bairro}
-                        </td>
-
-                        <td>
-                            ${formatarData(maior.data)}
-                        </td>
-
-                    `;
-
-                });
-
-        }
-
-        // =====================================================
-        // CONSULTA 2
-        // =====================================================
-
-        function executarConsulta2() {
-
-            const tabela =
-                document.getElementById(
-                    "tabelaConsulta2"
-                );
-
-            tabela.innerHTML = "";
-
-            const grupos = {};
-
-            dados.forEach(item => {
-
-                const chave =
-                    `${item.posto}|${item.combustivel}`;
-
-                if (!grupos[chave]) {
-
-                    grupos[chave] = {
-
-                        posto:
-                            item.posto,
-
-                        bairro:
-                            item.bairro,
-
-                        combustivel:
-                            item.combustivel,
-
-                        valores: []
-
-                    };
-
-                }
-
-                grupos[chave]
-                    .valores
-                    .push(item.valor);
-
-            });
-
-            Object.values(grupos)
-                .sort(
-                    (a, b) =>
-                        a.posto.localeCompare(
-                            b.posto
-                        )
-                )
-                .forEach(grupo => {
-
-                    const soma =
-                        grupo.valores.reduce(
-                            (total, valor) =>
-                                total + valor,
-                            0
-                        );
-
-                    const media =
-                        soma /
-                        grupo.valores.length;
-
-                    const linha =
-                        tabela.insertRow();
-
-                    linha.innerHTML = `
-
-                        <td>
-                            ${grupo.posto}
-                        </td>
-
-                        <td>
-                            ${grupo.bairro}
-                        </td>
-
-                        <td>
-                            ${grupo.combustivel}
-                        </td>
-
-                        <td>
-                            ${formatarValor(media)}
-                        </td>
-
-                        <td>
-                            ${grupo.valores.length}
-                        </td>
-
-                    `;
-
-                });
-
-        }
-
-        // =====================================================
-        // CONSULTA 3
-        // =====================================================
-
-        function executarConsulta3() {
-
-            const tabela =
-                document.getElementById(
-                    "tabelaConsulta3"
-                );
-
-            tabela.innerHTML = "";
-
-            const grupos = {};
-
-            dados.forEach(item => {
-
-                const chave =
-                    `${item.posto}|${item.combustivel}`;
-
-                if (
-
-                    !grupos[chave] ||
-
-                    item.data >
-                    grupos[chave].data
-
-                ) {
-
-                    grupos[chave] =
-                        item;
-
-                }
-
-            });
-
-            Object.values(grupos)
-                .sort(
-                    (a, b) =>
-                        a.posto.localeCompare(
-                            b.posto
-                        )
-                )
-                .forEach(item => {
-
-                    const linha =
-                        tabela.insertRow();
-
-                    linha.innerHTML = `
-
-                        <td>
-                            ${item.posto}
-                        </td>
-
-                        <td>
-                            ${item.bairro}
-                        </td>
-
-                        <td>
-                            ${item.combustivel}
-                        </td>
-
-                        <td>
-                            ${formatarValor(item.valor)}
-                        </td>
-
-                        <td>
-                            ${formatarData(item.data)}
-                        </td>
-
-                    `;
-
-                });
-
-        }
-
-        // =====================================================
-        // CONSULTA 4
-        // =====================================================
-
-        function executarConsulta4() {
-
-            const tabela =
-                document.getElementById(
-                    "tabelaConsulta4"
-                );
-
-            const filtroPosto =
-                document.getElementById(
-                    "filtroPosto"
-                ).value;
-
-            const filtroCombustivel =
-                document.getElementById(
-                    "filtroCombustivel"
-                ).value;
-
-            tabela.innerHTML = "";
-
-            if (
-                !filtroPosto ||
-                !filtroCombustivel
-            ) {
-
-                const linha =
-                    tabela.insertRow();
-
-                const celula =
-                    linha.insertCell();
-
-                celula.colSpan = 5;
-
-                celula.textContent =
-                    "Selecione um posto e um combustível para visualizar a evolução dos preços.";
-
-                celula.style.textAlign =
-                    "center";
-
-                return;
-
-            }
-
-            const dadosFiltrados =
-                dados
-                    .filter(
-                        item =>
-                            item.posto === filtroPosto &&
-                            item.combustivel === filtroCombustivel
-                    )
-                    .sort((a, b) => {
-
-                        if (a.valor !== b.valor) {
-                            return a.valor - b.valor;
-                        }
-
-                        return a.data.localeCompare(b.data);
-
-                    });
-
-            if (
-                dadosFiltrados.length === 0
-            ) {
-
-                const linha =
-                    tabela.insertRow();
-
-                const celula =
-                    linha.insertCell();
-
-                celula.colSpan = 5;
-
-                celula.textContent =
-                    "Não existem registros para este posto e combustível.";
-
-                celula.style.textAlign =
-                    "center";
-
-                return;
-
-            }
-
-            dadosFiltrados.forEach(item => {
-
-                const linha =
-                    tabela.insertRow();
-
-                linha.innerHTML = `
-
-                    <td>
-                        ${item.posto}
-                    </td>
-
-                    <td>
-                        ${item.bairro}
-                    </td>
-
-                    <td>
-                        ${item.combustivel}
-                    </td>
-
-                    <td>
-                        ${formatarValor(item.valor)}
-                    </td>
-
-                    <td>
-                        ${formatarData(item.data)}
-                    </td>
-
-                `;
-
-            });
-
-        }
-
-        // =====================================================
-        // GRÁFICOS
-        // =====================================================
-
-        function criarGraficos() {
-
-            criarGraficoMedio();
-
-            criarGraficoPostos();
-
-        }
-
-        // =====================================================
-        // GRÁFICO I
-        // EVOLUÇÃO DO PREÇO MÉDIO DE CADA COMBUSTÍVEL
-        // =====================================================
-
-        function criarGraficoMedio() {
-
-            const canvas =
-                document.getElementById(
-                    "graficoMedio"
-                );
-
-            if (!canvas) {
-                return;
-            }
-
-            if (graficoMedio) {
-                graficoMedio.destroy();
-            }
-
-            // Agrupa os preços por combustível e por data.
-            const grupos = {};
-
-            dados.forEach(item => {
-
-                if (!grupos[item.combustivel]) {
-
-                    grupos[item.combustivel] = {};
-
-                }
-
-                if (!grupos[item.combustivel][item.data]) {
-
-                    grupos[item.combustivel][item.data] = [];
-
-                }
-
-                grupos[item.combustivel][item.data]
-                    .push(item.valor);
-
-            });
-
-            // Todas as datas disponíveis, em ordem cronológica.
-            const datas = [
-                ...new Set(
-                    dados.map(
-                        item => item.data
-                    )
-                )
-            ].sort();
-
-            const labels =
-                datas.map(
-                    data => formatarData(data)
-                );
-
-            const datasets =
-                Object.keys(grupos)
-                    .sort()
-                    .map(combustivel => {
-
-                        const valores =
-                            datas.map(data => {
-
-                                const lista =
-                                    grupos[combustivel][data];
-
-                                if (!lista) {
-                                    return null;
-                                }
-
-                                const soma =
-                                    lista.reduce(
-                                        (total, valor) =>
-                                            total + valor,
-                                        0
-                                    );
-
-                                return soma / lista.length;
-
-                            });
-
-                        return {
-
-                            label: combustivel,
-
-                            data: valores,
-
-                            tension: 0.2,
-
-                            spanGaps: true,
-
-                            pointRadius: 3,
-
-                            pointHoverRadius: 5
-
-                        };
-
-                    });
-
-            graficoMedio =
-                new Chart(
-                    canvas,
-                    {
-
-                        type: "line",
-
-                        data: {
-
-                            labels: labels,
-
-                            datasets: datasets
-
-                        },
-
-                        options: {
-
-                            responsive: true,
-
-                            maintainAspectRatio: false,
-
-                            interaction: {
-
-                                mode: "index",
-
-                                intersect: false
-
-                            },
-
-                            plugins: {
-
-                                legend: {
-
-                                    position: "bottom"
-
-                                },
-
-                                tooltip: {
-
-                                    callbacks: {
-
-                                        label: function(context) {
-
-                                            return `${context.dataset.label}: ${formatarValor(context.parsed.y)}`;
-
-                                        }
-
-                                    }
-
-                                }
-
-                            },
-
-                            scales: {
-
-                                y: {
-
-                                    beginAtZero: false,
-
-                                    ticks: {
-
-                                        callback: function(value) {
-
-                                            return formatarValor(value);
-
-                                        }
-
-                                    }
-
-                                }
-
-                            }
-
-                        }
-
-                    }
-                );
-
-        }
-
-        // =====================================================
-        // GRÁFICO II
-        // EVOLUÇÃO DO PREÇO MÉDIO DE CADA COMBUSTÍVEL
-        // EM CADA POSTO
-        // =====================================================
-
-        function criarGraficoPostos() {
-
-            const canvas =
-                document.getElementById(
-                    "graficoPostos"
-                );
-
-            if (!canvas) {
-                return;
-            }
-
-            if (graficoPostos) {
-                graficoPostos.destroy();
-            }
-
-            // Agrupa os preços por posto, combustível e data.
-            const grupos = {};
-
-            dados.forEach(item => {
-
-                const chave =
-                    `${item.posto}|${item.combustivel}`;
-
-                if (!grupos[chave]) {
-
-                    grupos[chave] = {
-
-                        posto: item.posto,
-
-                        combustivel:
-                            item.combustivel,
-
-                        datas: {}
-
-                    };
-
-                }
-
-                if (!grupos[chave].datas[item.data]) {
-
-                    grupos[chave].datas[item.data] = [];
-
-                }
-
-                grupos[chave]
-                    .datas[item.data]
-                    .push(item.valor);
-
-            });
-
-            // Todas as datas disponíveis, em ordem cronológica.
-            const datas = [
-                ...new Set(
-                    dados.map(
-                        item => item.data
-                    )
-                )
-            ].sort();
-
-            const labels =
-                datas.map(
-                    data => formatarData(data)
-                );
-
-            const datasets =
-                Object.values(grupos)
-                    .sort((a, b) => {
-
-                        const postoCompare =
-                            a.posto.localeCompare(
-                                b.posto
-                            );
-
-                        if (postoCompare !== 0) {
-                            return postoCompare;
-                        }
-
-                        return a.combustivel.localeCompare(
-                            b.combustivel
-                        );
-
-                    })
-                    .map(grupo => {
-
-                        const valores =
-                            datas.map(data => {
-
-                                const lista =
-                                    grupo.datas[data];
-
-                                if (!lista) {
-                                    return null;
-                                }
-
-                                const soma =
-                                    lista.reduce(
-                                        (total, valor) =>
-                                            total + valor,
-                                        0
-                                    );
-
-                                return soma / lista.length;
-
-                            });
-
-                        return {
-
-                            label:
-                                `${grupo.posto} - ${grupo.combustivel}`,
-
-                            data: valores,
-
-                            tension: 0.2,
-
-                            spanGaps: true,
-
-                            pointRadius: 2,
-
-                            pointHoverRadius: 5
-
-                        };
-
-                    });
-
-            graficoPostos =
-                new Chart(
-                    canvas,
-                    {
-
-                        type: "line",
-
-                        data: {
-
-                            labels: labels,
-
-                            datasets: datasets
-
-                        },
-
-                        options: {
-
-                            responsive: true,
-
-                            maintainAspectRatio: false,
-
-                            interaction: {
-
-                                mode: "index",
-
-                                intersect: false
-
-                            },
-
-                            plugins: {
-
-                                legend: {
-
-                                    position: "bottom",
-
-                                    labels: {
-
-                                        boxWidth: 12,
-
-                                        padding: 10,
-
-                                        font: {
-
-                                            size: 10
-
-                                        }
-
-                                    }
-
-                                },
-
-                                tooltip: {
-
-                                    callbacks: {
-
-                                        label: function(context) {
-
-                                            return `${context.dataset.label}: ${formatarValor(context.parsed.y)}`;
-
-                                        }
-
-                                    }
-
-                                }
-
-                            },
-
-                            scales: {
-
-                                y: {
-
-                                    beginAtZero: false,
-
-                                    ticks: {
-
-                                        callback: function(value) {
-
-                                            return formatarValor(value);
-
-                                        }
-
-                                    }
-
-                                }
-
-                            }
-
-                        }
-
-                    }
-                );
-
-        }
-
-        // =====================================================
-        // INICIALIZAÇÃO
-        // =====================================================
-
-        document.addEventListener(
-            "DOMContentLoaded",
-            function () {
-
-                carregarDados();
-
-            }
-        );
-
-    </script>
-
+<header>
+<h1>Sistema de Monitoramento de Preços de Combustíveis</h1>
+<p>Consulta e análise dos preços coletados</p>
+</header>
+
+<main>
+<div class="dashboard-titulo">
+<h2>Dashboard</h2>
+<div class="acessos">👥 Acessos únicos: <strong id="totalAcessos">-</strong></div>
+</div>
+
+<section class="cards">
+<div class="card"><h3>Total de Postos</h3><div class="valor" id="totalPostos">-</div></div>
+<div class="card"><h3>Combustíveis</h3><div class="valor" id="totalCombustiveis">-</div></div>
+<div class="card"><h3>Total de Coletas</h3><div class="valor" id="totalColetas">-</div></div>
+<div class="card"><h3>Última Coleta</h3><div class="valor" id="ultimaColeta">-</div></div>
+</section>
+
+<section class="secao">
+<h2>Menor e Maior Preço por Combustível</h2>
+<div class="filtros-tabela filtros-tabela-um">
+<div class="filtro">
+<label for="filtroTabela1Combustivel">Combustível</label>
+<select id="filtroTabela1Combustivel">
+<option value="">Todos os combustíveis</option>
+</select>
+</div>
+</div>
+<div class="tabela-container"><table><thead><tr>
+<th>Combustível</th><th>Menor preço</th><th>Posto (menor)</th><th>Bairro (menor)</th><th>Data da coleta (menor)</th>
+<th>Maior preço</th><th>Posto (maior)</th><th>Bairro (maior)</th><th>Data da coleta (maior)</th>
+</tr></thead><tbody id="tabelaConsulta1"></tbody></table></div>
+</section>
+
+<section class="secao">
+<h2>Preço Médio por Posto e Combustível</h2>
+<div class="filtros-tabela">
+<div class="filtro">
+<label for="filtroTabela2Posto">Posto</label>
+<select id="filtroTabela2Posto">
+<option value="">Todos os postos</option>
+</select>
+</div>
+<div class="filtro">
+<label for="filtroTabela2Combustivel">Combustível</label>
+<select id="filtroTabela2Combustivel">
+<option value="">Todos os combustíveis</option>
+</select>
+</div>
+</div>
+<div class="tabela-container"><table><thead><tr>
+<th>Posto</th><th>Bairro</th><th>Combustível</th><th>Preço médio</th><th>Quantidade de amostras</th>
+</tr></thead><tbody id="tabelaConsulta2"></tbody></table></div>
+</section>
+
+<section class="secao">
+<h2>Último Preço Registrado</h2>
+<div class="filtros-tabela">
+<div class="filtro">
+<label for="filtroTabela3Posto">Posto</label>
+<select id="filtroTabela3Posto">
+<option value="">Todos os postos</option>
+</select>
+</div>
+<div class="filtro">
+<label for="filtroTabela3Combustivel">Combustível</label>
+<select id="filtroTabela3Combustivel">
+<option value="">Todos os combustíveis</option>
+</select>
+</div>
+</div>
+<div class="tabela-container"><table><thead><tr>
+<th>Posto</th><th>Bairro</th><th>Combustível</th><th>Valor</th><th>Data da coleta</th>
+</tr></thead><tbody id="tabelaConsulta3"></tbody></table></div>
+</section>
+
+<section class="secao">
+<h2>Evolução do Preço</h2>
+<p class="descricao-filtro">Selecione um posto e um combustível para visualizar a evolução dos preços ao longo das coletas.</p>
+<div class="filtros-container" style="margin-bottom:20px">
+<div class="filtro"><label for="filtroPosto">Posto</label><select id="filtroPosto"><option value="">Selecione um posto</option></select></div>
+<div class="filtro"><label for="filtroCombustivel">Combustível</label><select id="filtroCombustivel"><option value="">Selecione um combustível</option></select></div>
+</div>
+<div class="tabela-container"><table><thead><tr>
+<th>Posto</th><th>Bairro</th><th>Combustível</th><th>Valor</th><th>Data da coleta</th>
+</tr></thead><tbody id="tabelaConsulta4"></tbody></table></div>
+</section>
+
+<section class="secao">
+<h2>Gráficos</h2>
+<div class="graficos">
+
+<div class="grafico-container">
+<h2>Evolução do Preço Médio por Combustível</h2>
+<div class="filtros-grafico">
+<div class="filtro">
+<label for="filtroGraficoCombustivel">Combustível</label>
+<select id="filtroGraficoCombustivel">
+<option value="">Todos os combustíveis</option>
+</select>
+</div>
+</div>
+<canvas id="graficoMedio"></canvas>
+</div>
+
+<div class="grafico-container">
+<h2>Evolução do Preço Médio por Posto e Combustível</h2>
+<div class="filtros-grafico filtros-grafico-dois">
+<div class="filtro">
+<label for="filtroGraficoPosto">Posto</label>
+<select id="filtroGraficoPosto">
+<option value="">Todos os postos</option>
+</select>
+</div>
+<div class="filtro">
+<label for="filtroGraficoCombustivelPosto">Combustível</label>
+<select id="filtroGraficoCombustivelPosto">
+<option value="">Todos os combustíveis</option>
+</select>
+</div>
+</div>
+<canvas id="graficoPostos"></canvas>
+</div>
+
+</div>
+</section>
+
+<section class="secao">
+<h2>Avalie o Sistema</h2>
+<p class="feedback-descricao">Sua avaliação ajuda a analisar a experiência de utilização do sistema.</p>
+<form class="feedback-form" id="formFeedback">
+<label for="nomeFeedback"><strong>Nome ou apelido (opcional)</strong></label>
+<input type="text" id="nomeFeedback" maxlength="40" placeholder="Ex.: João">
+
+<strong>Avaliação</strong>
+<div class="estrelas">
+<input type="radio" id="estrela5" name="avaliacao" value="5"><label for="estrela5">★</label>
+<input type="radio" id="estrela4" name="avaliacao" value="4"><label for="estrela4">★</label>
+<input type="radio" id="estrela3" name="avaliacao" value="3"><label for="estrela3">★</label>
+<input type="radio" id="estrela2" name="avaliacao" value="2"><label for="estrela2">★</label>
+<input type="radio" id="estrela1" name="avaliacao" value="1"><label for="estrela1">★</label>
+</div>
+
+<label for="comentarioFeedback"><strong>Comentário</strong></label>
+<textarea id="comentarioFeedback" maxlength="500" placeholder="Conte o que achou do sistema..." required></textarea>
+<button class="botao-feedback" type="submit">Enviar avaliação</button>
+<div class="mensagem-feedback" id="mensagemFeedback"></div>
+</form>
+
+<h2>Feedbacks dos usuários</h2>
+<div class="lista-feedbacks" id="listaFeedbacks"><p>Carregando avaliações...</p></div>
+</section>
+</main>
+
+<script>
+// =====================================================
+// SUPABASE - PREENCHA ESTES DOIS VALORES
+// =====================================================
+const SUPABASE_URL = "https://vsneqgtgqyzxdrtwncdr.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_nYIVCcj2d7v-Y4fdUO6O5A_vwBxz3kh";
+
+const supabaseConfigurado =
+!SUPABASE_URL.includes("COLOQUE_AQUI") &&
+!SUPABASE_ANON_KEY.includes("COLOQUE_AQUI");
+
+const supabaseClient = supabaseConfigurado
+? window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY)
+: null;
+
+let dados=[],graficoMedio=null,graficoPostos=null;
+
+function formatarData(data){
+if(!data)return "-";
+const p=data.substring(0,10).split("-");
+return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:data;
+}
+function formatarValor(valor){
+return Number(valor).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+}
+
+async function carregarDados(){
+try{
+const resposta=await fetch("dados.json");
+if(!resposta.ok)throw new Error("Não foi possível carregar dados.json.");
+const dadosJSON=await resposta.json();
+dados=dadosJSON.map(item=>({
+id:item.id_verificacao,posto:item.nome_posto,bairro:item.bairro,
+combustivel:item.nome_combustivel,valor:Number(item.preco_verificado),
+data:item.data_verificacao.substring(0,10)
+}));
+atualizarPagina();
+}catch(erro){console.error("Erro ao carregar dados:",erro);}
+}
+
+function atualizarPagina(){
+carregarDashboard();carregarFiltros();carregarFiltrosTabelas();executarConsulta1();executarConsulta2();executarConsulta3();executarConsulta4();criarGraficos();
+}
+
+function carregarDashboard(){
+const postos=[...new Set(dados.map(i=>i.posto))];
+const combustiveis=[...new Set(dados.map(i=>i.combustivel))];
+document.getElementById("totalPostos").textContent=postos.length;
+document.getElementById("totalCombustiveis").textContent=combustiveis.length;
+document.getElementById("totalColetas").textContent=dados.length;
+const datas=dados.map(i=>i.data).sort().reverse();
+document.getElementById("ultimaColeta").textContent=datas.length?formatarData(datas[0]):"-";
+}
+
+function carregarFiltros(){
+const fp=document.getElementById("filtroPosto"),fc=document.getElementById("filtroCombustivel");
+const ps=fp.value,cs=fc.value;
+fp.innerHTML='<option value="">Selecione um posto</option>';
+fc.innerHTML='<option value="">Selecione um combustível</option>';
+[...new Set(dados.map(i=>i.posto))].sort().forEach(v=>{
+const o=document.createElement("option");o.value=v;o.textContent=v;fp.appendChild(o);
+});
+[...new Set(dados.map(i=>i.combustivel))].sort().forEach(v=>{
+const o=document.createElement("option");o.value=v;o.textContent=v;fc.appendChild(o);
+});
+if([...fp.options].some(o=>o.value===ps))fp.value=ps;
+if([...fc.options].some(o=>o.value===cs))fc.value=cs;
+fp.onchange=executarConsulta4;fc.onchange=executarConsulta4;
+}
+
+function carregarFiltrosTabelas(){
+const combustiveis=[...new Set(dados.map(i=>i.combustivel))].sort();
+const postos=[...new Set(dados.map(i=>i.posto))].sort();
+
+const filtros=[
+["filtroTabela1Combustivel","Todos os combustíveis",combustiveis],
+["filtroTabela2Posto","Todos os postos",postos],
+["filtroTabela2Combustivel","Todos os combustíveis",combustiveis],
+["filtroTabela3Posto","Todos os postos",postos],
+["filtroTabela3Combustivel","Todos os combustíveis",combustiveis]
+];
+
+filtros.forEach(([id,texto,opcoes])=>{
+const select=document.getElementById(id);
+if(!select)return;
+const valorAtual=select.value;
+select.innerHTML="";
+const padrao=document.createElement("option");
+padrao.value="";
+padrao.textContent=texto;
+select.appendChild(padrao);
+opcoes.forEach(v=>{
+const option=document.createElement("option");
+option.value=v;
+option.textContent=v;
+select.appendChild(option);
+});
+if([...select.options].some(o=>o.value===valorAtual))select.value=valorAtual;
+});
+
+document.getElementById("filtroTabela1Combustivel").onchange=executarConsulta1;
+document.getElementById("filtroTabela2Posto").onchange=executarConsulta2;
+document.getElementById("filtroTabela2Combustivel").onchange=executarConsulta2;
+document.getElementById("filtroTabela3Posto").onchange=executarConsulta3;
+document.getElementById("filtroTabela3Combustivel").onchange=executarConsulta3;
+}
+
+function executarConsulta1(){
+const t=document.getElementById("tabelaConsulta1");
+t.innerHTML="";
+const filtroCombustivel=document.getElementById("filtroTabela1Combustivel")?.value||"";
+const grupos={};
+
+dados
+.filter(i=>!filtroCombustivel||i.combustivel===filtroCombustivel)
+.forEach(i=>(grupos[i.combustivel]??=[]).push(i));
+
+if(!Object.keys(grupos).length){
+const l=t.insertRow(),c=l.insertCell();
+c.colSpan=9;
+c.textContent="Não existem registros para o combustível selecionado.";
+c.style.textAlign="center";
+return;
+}
+
+Object.keys(grupos).sort().forEach(c=>{
+const r=grupos[c],
+menor=r.reduce((a,b)=>b.valor<a.valor?b:a),
+maior=r.reduce((a,b)=>b.valor>a.valor?b:a);
+const l=t.insertRow();
+l.innerHTML=`
+<td>${c}</td>
+<td>${formatarValor(menor.valor)}</td>
+<td>${menor.posto}</td>
+<td>${menor.bairro}</td>
+<td>${formatarData(menor.data)}</td>
+<td>${formatarValor(maior.valor)}</td>
+<td>${maior.posto}</td>
+<td>${maior.bairro}</td>
+<td>${formatarData(maior.data)}</td>`;
+});
+}
+
+function executarConsulta2(){
+const t=document.getElementById("tabelaConsulta2");
+t.innerHTML="";
+const filtroPosto=document.getElementById("filtroTabela2Posto")?.value||"";
+const filtroCombustivel=document.getElementById("filtroTabela2Combustivel")?.value||"";
+const g={};
+
+dados
+.filter(i=>
+(!filtroPosto||i.posto===filtroPosto) &&
+(!filtroCombustivel||i.combustivel===filtroCombustivel)
+)
+.forEach(i=>{
+const k=`${i.posto}|${i.combustivel}`;
+if(!g[k])g[k]={
+posto:i.posto,
+bairro:i.bairro,
+combustivel:i.combustivel,
+valores:[]
+};
+g[k].valores.push(i.valor);
+});
+
+if(!Object.keys(g).length){
+const l=t.insertRow(),c=l.insertCell();
+c.colSpan=5;
+c.textContent="Não existem registros para os filtros selecionados.";
+c.style.textAlign="center";
+return;
+}
+
+Object.values(g)
+.sort((a,b)=>a.posto.localeCompare(b.posto)||a.combustivel.localeCompare(b.combustivel))
+.forEach(x=>{
+const media=x.valores.reduce((a,b)=>a+b,0)/x.valores.length,
+l=t.insertRow();
+l.innerHTML=`
+<td>${x.posto}</td>
+<td>${x.bairro}</td>
+<td>${x.combustivel}</td>
+<td>${formatarValor(media)}</td>
+<td>${x.valores.length}</td>`;
+});
+}
+
+function executarConsulta3(){
+const t=document.getElementById("tabelaConsulta3");
+t.innerHTML="";
+const filtroPosto=document.getElementById("filtroTabela3Posto")?.value||"";
+const filtroCombustivel=document.getElementById("filtroTabela3Combustivel")?.value||"";
+const g={};
+
+dados
+.filter(i=>
+(!filtroPosto||i.posto===filtroPosto) &&
+(!filtroCombustivel||i.combustivel===filtroCombustivel)
+)
+.forEach(i=>{
+const k=`${i.posto}|${i.combustivel}`;
+if(!g[k]||i.data>g[k].data)g[k]=i;
+});
+
+if(!Object.keys(g).length){
+const l=t.insertRow(),c=l.insertCell();
+c.colSpan=5;
+c.textContent="Não existem registros para os filtros selecionados.";
+c.style.textAlign="center";
+return;
+}
+
+Object.values(g)
+.sort((a,b)=>a.posto.localeCompare(b.posto)||a.combustivel.localeCompare(b.combustivel))
+.forEach(i=>{
+const l=t.insertRow();
+l.innerHTML=`
+<td>${i.posto}</td>
+<td>${i.bairro}</td>
+<td>${i.combustivel}</td>
+<td>${formatarValor(i.valor)}</td>
+<td>${formatarData(i.data)}</td>`;
+});
+}
+
+function executarConsulta4(){
+const t=document.getElementById("tabelaConsulta4");
+const fp=document.getElementById("filtroPosto").value,fc=document.getElementById("filtroCombustivel").value;t.innerHTML="";
+if(!fp||!fc){
+const l=t.insertRow(),c=l.insertCell();c.colSpan=5;c.textContent="Selecione um posto e um combustível para visualizar a evolução dos preços.";c.style.textAlign="center";return;
+}
+const filtrados=dados.filter(i=>i.posto===fp&&i.combustivel===fc).sort((a,b)=>a.valor!==b.valor?a.valor-b.valor:a.data.localeCompare(b.data));
+if(!filtrados.length){
+const l=t.insertRow(),c=l.insertCell();c.colSpan=5;c.textContent="Não existem registros para este posto e combustível.";c.style.textAlign="center";return;
+}
+filtrados.forEach(i=>{const l=t.insertRow();l.innerHTML=`<td>${i.posto}</td><td>${i.bairro}</td><td>${i.combustivel}</td><td>${formatarValor(i.valor)}</td><td>${formatarData(i.data)}</td>`;});
+}
+
+function preencherFiltrosGraficos(){
+const fgComb=document.getElementById("filtroGraficoCombustivel");
+const fgPosto=document.getElementById("filtroGraficoPosto");
+const fgCombPosto=document.getElementById("filtroGraficoCombustivelPosto");
+if(!fgComb||!fgPosto||!fgCombPosto)return;
+
+const valorComb=fgComb.value;
+const valorPosto=fgPosto.value;
+const valorCombPosto=fgCombPosto.value;
+
+fgComb.innerHTML='<option value="">Todos os combustíveis</option>';
+fgPosto.innerHTML='<option value="">Todos os postos</option>';
+fgCombPosto.innerHTML='<option value="">Todos os combustíveis</option>';
+
+[...new Set(dados.map(i=>i.combustivel))].sort().forEach(v=>{
+const o1=document.createElement("option");o1.value=v;o1.textContent=v;fgComb.appendChild(o1);
+const o2=document.createElement("option");o2.value=v;o2.textContent=v;fgCombPosto.appendChild(o2);
+});
+
+[...new Set(dados.map(i=>i.posto))].sort().forEach(v=>{
+const o=document.createElement("option");o.value=v;o.textContent=v;fgPosto.appendChild(o);
+});
+
+if([...fgComb.options].some(o=>o.value===valorComb))fgComb.value=valorComb;
+if([...fgPosto.options].some(o=>o.value===valorPosto))fgPosto.value=valorPosto;
+if([...fgCombPosto.options].some(o=>o.value===valorCombPosto))fgCombPosto.value=valorCombPosto;
+
+fgComb.onchange=criarGraficos;
+fgPosto.onchange=criarGraficos;
+fgCombPosto.onchange=criarGraficos;
+}
+
+function criarGraficos(){
+preencherFiltrosGraficos();
+criarGraficoMedio();
+criarGraficoPostos();
+}
+
+function criarGraficoMedio(){
+const c=document.getElementById("graficoMedio");
+if(!c)return;
+if(graficoMedio)graficoMedio.destroy();
+
+const filtroCombustivel=document.getElementById("filtroGraficoCombustivel")?.value||"";
+const datas=[...new Set(dados.map(i=>i.data))].sort();
+const combustiveis=[...new Set(dados.map(i=>i.combustivel))]
+.filter(c=>!filtroCombustivel||c===filtroCombustivel)
+.sort();
+
+const datasets=combustiveis.map(c=>({
+label:c,
+data:datas.map(d=>{
+const r=dados.filter(i=>i.combustivel===c&&i.data===d);
+return r.length?r.reduce((s,i)=>s+i.valor,0)/r.length:null;
+}),
+tension:.2,
+spanGaps:true
+}));
+
+graficoMedio=new Chart(c,{
+type:"line",
+data:{labels:datas.map(formatarData),datasets},
+options:{
+responsive:true,
+maintainAspectRatio:false,
+interaction:{mode:"index",intersect:false},
+plugins:{
+legend:{
+position:"bottom",
+labels:{
+boxWidth:12,
+boxHeight:12,
+padding:8,
+font:{size:11}
+}
+}
+},
+scales:{y:{beginAtZero:false,ticks:{callback:v=>formatarValor(v)}}}
+}
+});
+}
+
+function criarGraficoPostos(){
+const c=document.getElementById("graficoPostos");
+if(!c)return;
+if(graficoPostos)graficoPostos.destroy();
+
+const filtroPosto=document.getElementById("filtroGraficoPosto")?.value||"";
+const filtroCombustivel=document.getElementById("filtroGraficoCombustivelPosto")?.value||"";
+const datas=[...new Set(dados.map(i=>i.data))].sort();
+const combinacoes={};
+
+dados
+.filter(i=>(!filtroPosto||i.posto===filtroPosto)&&(!filtroCombustivel||i.combustivel===filtroCombustivel))
+.forEach(i=>{
+const k=`${i.posto} - ${i.combustivel}`;
+combinacoes[k]={posto:i.posto,combustivel:i.combustivel};
+});
+
+const datasets=Object.entries(combinacoes)
+.sort(([a],[b])=>a.localeCompare(b))
+.map(([k,x])=>({
+label:k,
+data:datas.map(d=>{
+const r=dados.filter(i=>i.posto===x.posto&&i.combustivel===x.combustivel&&i.data===d);
+return r.length?r.reduce((s,i)=>s+i.valor,0)/r.length:null;
+}),
+tension:.2,
+spanGaps:true
+}));
+
+graficoPostos=new Chart(c,{
+type:"line",
+data:{labels:datas.map(formatarData),datasets},
+options:{
+responsive:true,
+maintainAspectRatio:false,
+interaction:{mode:"index",intersect:false},
+plugins:{
+legend:{
+position:"bottom",
+labels:{
+boxWidth:10,
+boxHeight:10,
+padding:6,
+font:{size:10}
+}
+}
+},
+scales:{y:{beginAtZero:false,ticks:{callback:v=>formatarValor(v)}}}
+}
+});
+}
+
+// =====================================================
+// CONTADOR DE ACESSOS ÚNICOS
+// =====================================================
+async function registrarAcesso(){
+if(!supabaseClient){document.getElementById("totalAcessos").textContent="—";return;}
+try{
+let visitanteId=localStorage.getItem("visitante_id");
+if(!visitanteId){visitanteId=crypto.randomUUID();localStorage.setItem("visitante_id",visitanteId);}
+await supabaseClient.from("acessos").upsert({visitante_id:visitanteId},{onConflict:"visitante_id"});
+const {count,error}=await supabaseClient.from("acessos").select("*",{count:"exact",head:true});
+if(error)throw error;
+document.getElementById("totalAcessos").textContent=count??0;
+}catch(e){console.error("Erro no contador:",e);document.getElementById("totalAcessos").textContent="—";}
+}
+
+// =====================================================
+// FEEDBACK
+// =====================================================
+async function carregarFeedbacks(){
+const lista=document.getElementById("listaFeedbacks");
+if(!supabaseClient){lista.innerHTML="<p>O armazenamento dos feedbacks ainda não foi configurado.</p>";return;}
+try{
+const {data,error}=await supabaseClient.from("feedbacks").select("nome,avaliacao,comentario,created_at").order("created_at",{ascending:false});
+if(error)throw error;
+if(!data?.length){lista.innerHTML="<p>Ainda não há avaliações.</p>";return;}
+lista.innerHTML="";
+data.forEach(f=>{
+const item=document.createElement("div");item.className="feedback-item";
+const nome=f.nome?.trim()||"Usuário",estrelas="★".repeat(f.avaliacao)+"☆".repeat(5-f.avaliacao);
+item.innerHTML=`<div class="feedback-cabecalho"><span class="feedback-nome"></span><span class="feedback-estrelas">${estrelas}</span></div><div class="feedback-comentario"></div><div class="feedback-data">${new Date(f.created_at).toLocaleDateString("pt-BR")}</div>`;
+item.querySelector(".feedback-nome").textContent=nome;
+item.querySelector(".feedback-comentario").textContent=f.comentario;
+lista.appendChild(item);
+});
+}catch(e){console.error("Erro nos feedbacks:",e);lista.innerHTML="<p>Não foi possível carregar os feedbacks.</p>";}
+}
+
+document.getElementById("formFeedback").addEventListener("submit",async function(e){
+e.preventDefault();
+const msg=document.getElementById("mensagemFeedback"),nome=document.getElementById("nomeFeedback").value.trim(),comentario=document.getElementById("comentarioFeedback").value.trim(),avaliacao=document.querySelector('input[name="avaliacao"]:checked');
+if(!supabaseClient){msg.textContent="O armazenamento dos feedbacks ainda não foi configurado.";return;}
+if(!avaliacao){msg.textContent="Selecione uma avaliação de 1 a 5 estrelas.";return;}
+if(!comentario){msg.textContent="Digite um comentário.";return;}
+try{
+const {error}=await supabaseClient.from("feedbacks").insert({nome:nome||"Usuário",avaliacao:Number(avaliacao.value),comentario});
+if(error)throw error;
+msg.textContent="Avaliação enviada com sucesso!";this.reset();await carregarFeedbacks();
+}catch(e){console.error(e);msg.textContent="Não foi possível enviar a avaliação. Tente novamente.";}
+});
+
+document.addEventListener("DOMContentLoaded",()=>{carregarDados();registrarAcesso();carregarFeedbacks();});
+</script>
 </body>
-
 </html>
